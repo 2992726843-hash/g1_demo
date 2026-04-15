@@ -1,0 +1,3 @@
+# 忽略 VSCode 超大缓存文件
+.vscode/*.db
+.vscode/browse.vc.db

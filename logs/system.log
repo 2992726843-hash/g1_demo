@@ -1,0 +1,16 @@
+[2026-04-15 20:38:25] [system.main] [INFO] - System Initializing...
+[2026-04-15 20:38:25] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-15 20:42:14] [system.main] [INFO] - [LLMAgent] 分析意图: '去帮我拿药'
+[2026-04-15 20:42:14] [system.main] [INFO] - [SystemCore] 已播报: 好的爷爷，我去拿药
+[2026-04-15 20:42:14] [system.main] [INFO] - [SystemCore] 执行机器人动作: fetch_medicine -> bedroom
+[2026-04-15 20:42:14] [system.main] [INFO] - [IoTController] 控制设备 bedroom 动作: fetch_medicine
+[2026-04-15 20:42:15] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-15 20:49:49] [system.main] [INFO] - 用户请求退出。
+[2026-04-15 20:49:49] [system.main] [INFO] - 系统安全关闭
+[2026-04-15 21:04:48] [hardware.real_g1.test] [INFO] - RealG1Robot connected via interface: wlo1
+[2026-04-15 21:04:48] [hardware.real_g1.test] [INFO] - [PC-TTS] 播报: Real G1 robot test started.
+[2026-04-15 21:04:58] [hardware.real_g1.test] [WARNING] - loco_control failed. cmd=stand_up code=None
+[2026-04-15 21:05:10] [hardware.real_g1.test] [WARNING] - loco_control failed. cmd=sit code=None
+[2026-04-15 21:17:55] [modules.llm_agent.qwen_client] [WARNING] - LLM api_key not found in config at llm.api_key.
+[2026-04-15 21:17:55] [modules.llm_agent.qwen_client] [WARNING] - LLM request failed: ('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))
+[2026-04-15 21:19:40] [modules.llm_agent.qwen_client] [WARNING] - LLM request failed: No connection adapters were found for '[https://dashscope.aliyuncs.com/compatible-mode/v1](https://dashscope.aliyuncs.com/compatible-mode/v1)/v1/chat/completions'
