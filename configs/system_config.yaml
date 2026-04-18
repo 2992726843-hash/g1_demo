@@ -1,12 +1,12 @@
 robot:
   ip: "10.68.182.180"       # 你电脑真实IP
-  network_interface: "wlo1" # 你正在用的网卡
+  network_interface: "enp108s0" # 你正在用的网卡
 
 home_assistant:
   url: "http://127.0.0.1:8123"
   token: "your_token_here"
 
-mode: "mock" # 开发用 mock，真机运行改成 real
+mode: "real" # 开发用 mock，真机运行改成 real
 
 # 新增 LLM 配置
 llm:

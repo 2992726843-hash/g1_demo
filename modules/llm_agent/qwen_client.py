@@ -1,13 +1,15 @@
+from __future__ import annotations
+
 import json
 import logging
 import os
 import re
 import sys
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import requests
 
-# Allow running this file directly: add project root to sys.path
+# 允许直接运行该文件：把项目根目录加入 sys.path
 _PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
@@ -15,61 +17,97 @@ if _PROJECT_ROOT not in sys.path:
 from core.utils import ConfigLoader, setup_logger  # noqa: E402
 
 
-class QwenClient:
-    SYSTEM_PROMPT: str = (
-        "你是“适老化智能管家 G1”，负责把老人的自然语言转换为机器人可执行的控制意图。\n"
-        "\n"
-        "极其重要的输出规则（必须严格遵守）：\n"
-        "1) 你【只能】输出一段“纯净 JSON”，禁止输出任何解释性文字。\n"
-        "2) 禁止输出任何 Markdown 标记（例如 ```json / ```）。\n"
-        '3) JSON 必须严格为：{"action":"...","target":"...","reply":"..."}，只能有这三个字段。\n'
-        "4) action 的可选值仅限以下之一：\n"
-        '   - "stand_up"\n'
-        '   - "sit"\n'
-        '   - "squat"\n'
-        '   - "action_11"（飞吻）\n'
-        '   - "action_17"（鼓掌）\n'
-        '   - "action_26"（挥手）\n'
-        '   - "noop"（无动作）\n'
-        "5) target 是动作对象/区域；若不需要请置空字符串。\n"
-        "6) reply 必须是第一人称、口语化的中文回复，体现对老人的关怀，并结合我给你的 context 环境状态进行情境化回应。\n"
-        "7) 若用户意图不明确或存在风险（例如不适/头晕/高血压夜间等），优先选择 noop，并在 reply 中温和地建议休息/测量/寻求帮助。\n"
-        "\n"
-        "现在我会给你两段信息：\n"
-        "- context：JSON 字符串，包含环境与老人状态\n"
-        "- user_text：老人的原话\n"
-        "请只输出最终 JSON。"
-    )
+class QwenAgent:
+    """
+    通义千问（DashScope OpenAI 兼容模式）接入客户端。
 
-    _ALLOWED_ACTIONS = {"stand_up", "sit", "squat", "action_11", "action_17", "action_26", "noop"}
+    关键约束：
+    - System Prompt 强制模型只输出 JSON。
+    - 三层防御解析器确保上层永远拿到结构正确且安全的 dict。
+    - 动作集合从 `ActionExecutor.ACTION_MAP` 动态获取，避免 prompt 与系统能力脱节。
+    """
+
+    _FALLBACK: Dict[str, str] = {
+        "category": "chat",
+        "action": "none",
+        "target": "",
+        "reply": "抱歉，我没听清，您能再说一遍吗？",
+    }
+
+    # 比赛场景：类别只能四选一（高约束，低幻觉）
+    CATEGORY_HINTS: List[str] = ["robot_action", "iot_action", "chat", "emergency"]
 
     def __init__(self, logger: Optional[logging.Logger] = None) -> None:
         self.logger: logging.Logger = logger or setup_logger("modules.llm_agent.qwen_client")
 
+        # 1) 先读取配置
         cfg = ConfigLoader()
-        self.api_key: str = str(cfg.get_nested("llm", "api_key", default="") or "")
-        self.base_url: str = str(cfg.get_nested("llm", "base_url", default="") or "")
-        self.model_name: str = str(cfg.get_nested("llm", "model_name", default="") or "")
 
+        # 2) API Key：优先环境变量，其次配置文件（llm.api_key）
+        env_key = str(os.getenv("DASHSCOPE_API_KEY", "") or "").strip()
+        cfg_key = str(cfg.get_nested("llm", "api_key", default="") or "").strip()
+        self.api_key: str = env_key if env_key else cfg_key
         if not self.api_key:
-            self.logger.warning("LLM api_key not found in config at llm.api_key.")
+            self.logger.warning("未检测到 DASHSCOPE_API_KEY；将无法调用真实大模型（仅能返回兜底）。")
 
-    def analyze_intent(self, user_text: str, context: dict) -> dict:
-        fallback: Dict[str, str] = {
-            "action": "noop",
-            "target": "",
-            "reply": "抱歉爷爷，我刚刚走神了，您能再说一遍吗？",
-        }
+        # 3) 可选配置：base_url / model_name
+        self.base_url: str = str(cfg.get_nested("llm", "base_url", default="") or "")
+        self.model_name: str = str(cfg.get_nested("llm", "model_name", default="") or "") or "qwen-turbo"
 
+        # 3) 动态动作集合：从 ActionExecutor.ACTION_MAP.keys() 读取
         try:
-            ctx_str = json.dumps(context, ensure_ascii=False)
-        except Exception:
-            ctx_str = "{}"
+            from core.action_executor import ActionExecutor
+
+            dynamic_actions = list(ActionExecutor.ACTION_MAP.keys())
+        except Exception as e:
+            self.logger.warning("无法从 ActionExecutor 读取 ACTION_MAP，动态动作列表为空。error=%s", e)
+            dynamic_actions = []
+
+        # 比赛阶段只暴露“当前可稳定演示”的动作：
+        # - 预留/未实现能力不进入 LLM 白名单，避免模型输出 custom_dance 这类无法演示的动作。
+        dynamic_actions = [a for a in dynamic_actions if a not in {"custom_dance"}]
+
+        # 系统基础动作（按需求：none / navigate / move 等）
+        base_actions: List[str] = ["none", "navigate", "move", "stop"]
+        # 比赛演示常用 IoT 动作：加入白名单，避免被误拦截
+        iot_actions: List[str] = ["light_on", "light_off", "fan_on", "fan_off", "ac_on", "ac_off"]
+
+        # 合并去重：保持稳定顺序，便于 prompt 一致性
+        seen: set[str] = set()
+        valid: List[str] = []
+        for a in base_actions + iot_actions + dynamic_actions:
+            s = str(a).strip()
+            if not s or s in seen:
+                continue
+            seen.add(s)
+            valid.append(s)
+
+        self.VALID_ACTIONS: List[str] = valid
+        self._system_prompt: str = self._build_system_prompt()
+        self.logger.info("QwenAgent 初始化完成：VALID_ACTIONS=%s", self.VALID_ACTIONS)
+
+    def chat(self, user_text: str, context: str = "") -> Dict[str, str]:
+        """
+        核心通信方法：
+        - requests 调用 DashScope OpenAI 兼容接口（temperature=0.2）
+        - 将 context + user_text 拼装后发给模型
+        - 网络失败/超时/接口报错：返回安全兜底字典
+        """
+        if not isinstance(user_text, str) or not user_text.strip():
+            return dict(self._FALLBACK)
+
+        # 比赛场景先求稳：常见指令直接短路，不走网络，避免幻觉/延迟/断网翻车
+        shortcut = self._shortcut_intent(user_text)
+        if shortcut is not None:
+            return shortcut
+
+        ctx = (context or "").strip()
+        user_text_clean = user_text.strip()
+        combined = f"context: {ctx}\nuser_text: {user_text_clean}" if ctx else f"user_text: {user_text_clean}"
 
         messages = [
-            {"role": "system", "content": self.SYSTEM_PROMPT},
-            {"role": "user", "content": f"context: {ctx_str}"},
-            {"role": "user", "content": f"user_text: {user_text.strip()}"},
+            {"role": "system", "content": self._system_prompt},
+            {"role": "user", "content": combined},
         ]
 
         url = self._chat_completions_url(self.base_url)
@@ -78,38 +116,155 @@ class QwenClient:
             headers["Authorization"] = f"Bearer {self.api_key}"
 
         payload: Dict[str, Any] = {
-            "model": self.model_name or "qwen-turbo",
+            "model": self.model_name,
             "messages": messages,
             "temperature": 0.2,
         }
 
         try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=20)
+            resp = requests.post(url, headers=headers, json=payload, timeout=5)
             resp.raise_for_status()
             data: Dict[str, Any] = resp.json()
-            content = self._extract_content(data)
+            raw = self._extract_content(data)
         except Exception as e:
-            self.logger.warning("LLM request failed: %s", e)
-            return fallback
+            self.logger.error("Qwen 请求失败（已返回安全兜底）。error=%s", e)
+            self.logger.info("[LLM FALLBACK] 使用兜底回复")
+            return dict(self._FALLBACK)
 
-        parsed = self._robust_parse_json(content)
-        if parsed is None:
-            self.logger.warning("LLM response JSON parse failed. raw=%r", content)
-            return fallback
+        return self._parse_and_sanitize(raw)
 
-        action = str(parsed.get("action", "")).strip()
-        target = str(parsed.get("target", "")).strip()
-        reply = str(parsed.get("reply", "")).strip()
+    def analyze_intent(self, user_text: str, context: dict) -> Dict[str, str]:
+        """
+        向后兼容接口：旧代码使用 analyze_intent(context: dict)。
+        """
+        try:
+            ctx_str = json.dumps(context, ensure_ascii=False)
+        except Exception:
+            ctx_str = ""
+        return self.chat(user_text=user_text, context=ctx_str)
 
-        if action not in self._ALLOWED_ACTIONS:
-            self.logger.warning("LLM returned unsupported action: %r", action)
-            return fallback
-        if not isinstance(target, str) or not isinstance(reply, str):
-            return fallback
-        if not reply:
-            return fallback
+    def _parse_and_sanitize(self, raw_text: str) -> Dict[str, str]:
+        """
+        【最核心：三层防御解析器】
+        1) 正则提取：用 r"\\{.*?\\}" + DOTALL 抠出第一个 JSON 对象
+        2) json.loads：失败立刻返回兜底
+        3) 类型与边界校验重建：防止 null/非法类型/幻觉动作注入
+        """
+        # 第一层（正则提取）
+        s = raw_text if isinstance(raw_text, str) else str(raw_text)
+        m = re.search(r"\{.*?\}", s, flags=re.DOTALL)
+        extracted = m.group(0) if m else ""
 
-        return {"action": action, "target": target, "reply": reply}
+        # 第二层（解析与捕获）
+        try:
+            obj = json.loads(extracted)
+        except json.JSONDecodeError as e:
+            self.logger.error("LLM JSONDecodeError：%s raw=%r extracted=%r", e, raw_text, extracted)
+            return dict(self._FALLBACK)
+        except Exception as e:
+            self.logger.error("LLM JSON 解析异常：%s raw=%r extracted=%r", e, raw_text, extracted)
+            return dict(self._FALLBACK)
+
+        if not isinstance(obj, dict):
+            self.logger.error("LLM 返回非 dict JSON：type=%s raw=%r", type(obj), raw_text)
+            return dict(self._FALLBACK)
+
+        # 第三层（类型与边界校验重建）
+        # 1) category：缺失/非法 -> chat
+        category_raw = obj.get("category", "chat")
+        category = str(category_raw).strip()
+        if category not in self.CATEGORY_HINTS:
+            self.logger.warning("LLM category 非法已纠正：category=%r raw=%r", category, raw_text)
+            category = "chat"
+
+        # 2) action：越界 -> none
+        action_raw = obj.get("action", "none")
+        action = str(action_raw).strip()
+        if action != "none" and action not in self.VALID_ACTIONS:
+            self.logger.warning(
+                "LLM 幻觉动作已被拦截：action=%r valid=%s raw=%r",
+                action,
+                self.VALID_ACTIONS,
+                raw_text,
+            )
+            action = "none"
+
+        # 3) 一致性修正（比赛场景下先求稳，再求聪明）
+        if category == "chat":
+            # 普通对话：强制不做动作
+            if action != "none":
+                self.logger.warning("category=chat 但 action!=none，已强制改写为 none。action=%r raw=%r", action, raw_text)
+            action = "none"
+        elif action == "none":
+            # 允许 category 保留（可能用于 UI 展示/后续策略），但记录日志便于排查
+            self.logger.info("action=none 但 category=%s，将仅播报 reply。raw=%r", category, raw_text)
+
+        target_raw = obj.get("target", "")
+        target = "" if target_raw is None else str(target_raw)
+
+        reply_raw = obj.get("reply", None)
+        reply = self._FALLBACK["reply"] if reply_raw is None else (str(reply_raw).strip() or self._FALLBACK["reply"])
+
+        return {"category": category, "action": action, "target": target, "reply": reply}
+
+    def _build_system_prompt(self) -> str:
+        valid_actions_str = ", ".join([json.dumps(a, ensure_ascii=False) for a in self.VALID_ACTIONS])
+        return (
+            "你的身份：宇树 G1 适老化智能看护管家。\n"
+            "\n"
+            "你的输出格式：绝对且仅能输出 JSON，格式为："
+            '{"category": "...", "action": "...", "target": "...", "reply": "..."}'
+            "。\n"
+            "\n"
+            "category 限制：必须且只能从以下四选一："
+            "[\"robot_action\", \"iot_action\", \"chat\", \"emergency\"]。\n"
+            "action 限制：必须从以下列表中选择，或为 \"none\"："
+            f"[{valid_actions_str}]。\n"
+            "如果只是普通对话，不需要执行动作：输出 category=\"chat\" 且 action=\"none\"。\n"
+            "\n"
+            "额外硬性规则：\n"
+            "1) 禁止输出任何解释性文字。\n"
+            "2) 禁止输出 Markdown，禁止输出 ```json 或 ```。\n"
+            "3) target 若不需要必须为 \"\"。\n"
+        )
+
+    def _shortcut_intent(self, user_text: str) -> Optional[Dict[str, str]]:
+        """
+        比赛场景短路规则：
+        - 先求稳：常见指令直接给确定输出，不走网络
+        - 避免幻觉：把动作固定在白名单里
+        """
+        t = (user_text or "").strip()
+        if not t:
+            return None
+
+        # 只做非常简单的关键词匹配（不引入复杂 NLP）
+        if "挥手" in t:
+            return {"category": "robot_action", "action": "wave_hand", "target": "", "reply": "好的，我来挥挥手。"}
+        if "鼓掌" in t:
+            return {"category": "robot_action", "action": "clap", "target": "", "reply": "好的，我来鼓掌。"}
+        if "飞吻" in t:
+            return {"category": "robot_action", "action": "blow_kiss", "target": "", "reply": "好的，送您一个飞吻。"}
+        if t in ("你好", "您好", "嗨"):
+            return {"category": "robot_action", "action": "greet", "target": "", "reply": "您好，我在。"}
+        if t in ("再见", "拜拜"):
+            return {"category": "robot_action", "action": "goodbye", "target": "", "reply": "好的，再见。"}
+        if "开灯" in t:
+            return {
+                "category": "iot_action",
+                "action": "light_on",
+                "target": "light.living_room",
+                "reply": "好的，我来开灯。",
+            }
+        if "关灯" in t:
+            return {
+                "category": "iot_action",
+                "action": "light_off",
+                "target": "light.living_room",
+                "reply": "好的，我来关灯。",
+            }
+
+        return None
 
     @staticmethod
     def _chat_completions_url(base_url: str) -> str:
@@ -128,12 +283,14 @@ class QwenClient:
         # OpenAI-compatible response: choices[0].message.content
         try:
             choices = resp_json.get("choices", [])
-            if choices and isinstance(choices, list):
-                msg = choices[0].get("message", {}) if isinstance(choices[0], dict) else {}
-                content = msg.get("content", "")
-                return content if isinstance(content, str) else str(content)
+            if choices and isinstance(choices, list) and isinstance(choices[0], dict):
+                msg = choices[0].get("message", {})
+                if isinstance(msg, dict):
+                    content = msg.get("content", "")
+                    return content if isinstance(content, str) else str(content)
         except Exception:
             pass
+
         # Fallback: some providers use "output_text" etc.
         for k in ("output_text", "text", "content"):
             v = resp_json.get(k)
@@ -141,39 +298,18 @@ class QwenClient:
                 return v
         return ""
 
-    @staticmethod
-    def _robust_parse_json(text: str) -> Optional[Dict[str, Any]]:
-        if not isinstance(text, str):
-            return None
 
-        s = text.strip()
-        if not s:
-            return None
-
-        # Remove common code fences like ```json ... ```
-        s = re.sub(r"^\s*```(?:json)?\s*", "", s, flags=re.IGNORECASE)
-        s = re.sub(r"\s*```\s*$", "", s)
-
-        # Extract first JSON object block if there's extra noise
-        m = re.search(r"\{[\s\S]*\}", s)
-        if m:
-            s = m.group(0).strip()
-
-        # Attempt strict json parsing
-        try:
-            obj = json.loads(s)
-            return obj if isinstance(obj, dict) else None
-        except Exception:
-            return None
+# 向后兼容旧类名（如果外部仍 import QwenClient）
+QwenClient = QwenAgent
 
 
 if __name__ == "__main__":
-    client = QwenClient()
+    client = QwenAgent()
     fake_context = {
         "time": "22:00",
         "location": "living_room",
         "light": "off",
         "user_profile": "有高血压",
     }
-    result = client.analyze_intent("我有点头晕，我想休息了", fake_context)
+    result = client.chat("我有点头晕，我想休息了", context=json.dumps(fake_context, ensure_ascii=False))
     print(json.dumps(result, ensure_ascii=False, indent=2))

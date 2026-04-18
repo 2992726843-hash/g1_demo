@@ -14,3 +14,485 @@
 [2026-04-15 21:17:55] [modules.llm_agent.qwen_client] [WARNING] - LLM api_key not found in config at llm.api_key.
 [2026-04-15 21:17:55] [modules.llm_agent.qwen_client] [WARNING] - LLM request failed: ('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer'))
 [2026-04-15 21:19:40] [modules.llm_agent.qwen_client] [WARNING] - LLM request failed: No connection adapters were found for '[https://dashscope.aliyuncs.com/compatible-mode/v1](https://dashscope.aliyuncs.com/compatible-mode/v1)/v1/chat/completions'
+[2026-04-17 16:04:37] [system.main] [INFO] - System Initializing...
+[2026-04-17 16:04:37] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 16:04:54] [system.main] [INFO] - [LLMAgent] 分析意图: '今天天气有点冷啊'
+[2026-04-17 16:04:54] [system.main] [INFO] - [SystemCore] 已播报: 好的爷爷，我去拿药
+[2026-04-17 16:04:54] [system.main] [INFO] - [SystemCore] 执行机器人动作: fetch_medicine -> bedroom
+[2026-04-17 16:04:54] [system.main] [INFO] - [IoTController] 控制设备 bedroom 动作: fetch_medicine
+[2026-04-17 16:04:54] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 16:12:54] [system.main] [INFO] - 用户请求退出。
+[2026-04-17 16:12:54] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 16:12:58] [system.main] [INFO] - System Initializing...
+[2026-04-17 16:12:58] [system.main] [WARNING] - 未检测到环境变量 DASHSCOPE_API_KEY；将无法调用真实大模型（仅能返回兜底）。
+[2026-04-17 16:12:58] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye', 'custom_dance']
+[2026-04-17 16:12:58] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 16:13:11] [system.main] [INFO] - 用户请求退出。
+[2026-04-17 16:13:11] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 16:17:14] [system.main] [INFO] - System Initializing...
+[2026-04-17 16:17:14] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye', 'custom_dance']
+[2026-04-17 16:17:14] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 16:17:36] [system.main] [INFO] - [SystemCore] 已播报: 是呀，今天确实有点冷，您记得多穿点衣服，别着凉了。
+[2026-04-17 16:17:36] [system.main] [INFO] - [IoTController] 控制设备 light_default 动作: none
+[2026-04-17 16:17:37] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 16:18:07] [system.main] [INFO] - [SystemCore] 已播报: 您好！很高兴见到您，我来跟您挥挥手打招呼！
+[2026-04-17 16:18:07] [system.main] [INFO] - [SystemCore] 动作下发: wave_hand -> 
+[2026-04-17 16:18:07] [system.main] [INFO] - [IoTController] 控制设备 light_default 动作: wave_hand
+[2026-04-17 16:18:07] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 16:22:39] [system.main] [INFO] - 用户请求退出。
+[2026-04-17 16:22:39] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 16:22:42] [system.main] [INFO] - System Initializing...
+[2026-04-17 16:22:42] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye', 'custom_dance']
+[2026-04-17 16:22:42] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 16:23:03] [system.main] [INFO] - [SystemCore] 已播报: 好的，我在向您挥手呢！
+[2026-04-17 16:23:03] [system.main] [INFO] - [SystemCore] 动作下发: wave_hand -> 
+[2026-04-17 16:23:03] [system.main] [INFO] - [IoTController] 控制设备 light_default 动作: wave_hand
+[2026-04-17 16:23:03] [hardware.real_g1] [WARNING] - Unitree SDK2 初始化失败，已进入降级模式（_connected=False）。可能原因：未安装 SDK / DDS 网络异常 / SDK 版本不匹配。错误：No module named 'unitree_sdk2py'
+[2026-04-17 16:23:03] [hardware.real_g1] [WARNING] - [MOCK] play_action(action_id=99) ignored: _connected=False
+[2026-04-17 16:23:03] [hardware.real_g1] [WARNING] - [MOCK] play_action(action_id=26) ignored: _connected=False
+[2026-04-17 16:23:03] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 16:29:21] [system.main] [INFO] - 用户请求退出。
+[2026-04-17 16:29:21] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 16:29:54] [system.main] [INFO] - System Initializing...
+[2026-04-17 16:29:54] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye', 'custom_dance']
+[2026-04-17 16:29:54] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 16:30:01] [system.main] [INFO] - [SystemCore] 已播报: 好的，我在向您挥手呢！
+[2026-04-17 16:30:01] [system.main] [INFO] - [SystemCore] 动作下发: wave_hand -> 
+[2026-04-17 16:30:01] [system.main] [INFO] - [IoTController] 控制设备 light_default 动作: wave_hand
+[2026-04-17 16:30:01] [hardware.real_g1] [WARNING] - Unitree SDK2 初始化失败，已进入降级模式（_connected=False）。可能原因：未安装 SDK / DDS 网络异常 / SDK 版本不匹配。错误：Unitree SDK2 SportClient not found (module layout mismatch).
+[2026-04-17 16:30:01] [hardware.real_g1] [WARNING] - [MOCK] play_action(action_id=99) ignored: _connected=False
+[2026-04-17 16:30:01] [hardware.real_g1] [WARNING] - [MOCK] play_action(action_id=26) ignored: _connected=False
+[2026-04-17 16:30:02] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 16:32:39] [system.main] [INFO] - 用户请求退出。
+[2026-04-17 16:32:39] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 16:32:44] [system.main] [INFO] - System Initializing...
+[2026-04-17 16:32:44] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye', 'custom_dance']
+[2026-04-17 16:32:44] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 16:32:56] [system.main] [INFO] - [SystemCore] 已播报: 您稍等，我马上帮您拿条毯子来。
+[2026-04-17 16:32:56] [system.main] [INFO] - [IoTController] 控制设备 light_default 动作: none
+[2026-04-17 16:32:56] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 16:33:18] [system.main] [INFO] - [SystemCore] 已播报: 好的，给您挥手啦！
+[2026-04-17 16:33:18] [system.main] [INFO] - [SystemCore] 动作下发: wave_hand -> 
+[2026-04-17 16:33:18] [system.main] [INFO] - [IoTController] 控制设备 light_default 动作: wave_hand
+[2026-04-17 16:33:18] [hardware.real_g1] [WARNING] - Unitree SDK2 初始化失败，已进入降级模式（_connected=False）。可能原因：未安装 SDK / DDS 网络异常 / SDK 版本不匹配。错误：Unitree SDK2 SportClient not found (module layout mismatch).
+[2026-04-17 16:33:18] [hardware.real_g1] [WARNING] - [MOCK] play_action(action_id=99) ignored: _connected=False
+[2026-04-17 16:33:18] [hardware.real_g1] [WARNING] - [MOCK] play_action(action_id=26) ignored: _connected=False
+[2026-04-17 16:33:19] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 17:48:00] [system.main] [INFO] - 用户请求退出。
+[2026-04-17 17:48:00] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 17:48:02] [system.main] [INFO] - System Initializing...
+[2026-04-17 17:48:02] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye', 'custom_dance']
+[2026-04-17 17:48:02] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 17:49:26] [system.main] [INFO] - 收到 Ctrl+C，用户中断。
+[2026-04-17 17:49:26] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 17:49:29] [system.main] [INFO] - System Initializing...
+[2026-04-17 17:49:29] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye', 'custom_dance']
+[2026-04-17 17:49:29] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 17:49:36] [system.main] [INFO] - [SystemCore] 已播报: 好的，我在向您挥手呢！
+[2026-04-17 17:49:36] [system.main] [INFO] - [SystemCore] 动作下发: wave_hand -> 
+[2026-04-17 17:49:36] [system.main] [INFO] - [IoTController] 控制设备 light_default 动作: wave_hand
+[2026-04-17 17:49:36] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 17:49:36] [hardware.real_g1] [INFO] - Unitree SDK2 初始化成功：已连接（G1ArmActionClient）。net_if=wlo1
+[2026-04-17 17:49:47] [hardware.real_g1] [WARNING] - ExecuteAction 返回非零：action_id=99 exec_id=99 code=3102
+[2026-04-17 17:49:47] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 17:49:57] [hardware.real_g1] [WARNING] - ExecuteAction 返回非零：action_id=26 exec_id=26 code=3102
+[2026-04-17 17:49:57] [hardware.real_g1] [INFO] - play_action 已发送：action_id=26
+[2026-04-17 17:51:37] [system.main] [INFO] - 收到 Ctrl+C，用户中断。
+[2026-04-17 17:51:37] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 17:51:39] [system.main] [INFO] - System Initializing...
+[2026-04-17 17:51:39] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye', 'custom_dance']
+[2026-04-17 17:51:39] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 17:51:50] [system.main] [INFO] - [SystemCore] 已播报: 好的，我在向您挥手呢！
+[2026-04-17 17:51:50] [system.main] [INFO] - [SystemCore] 动作下发: wave_hand -> 
+[2026-04-17 17:51:50] [system.main] [INFO] - [IoTController] 控制设备 light_default 动作: wave_hand
+[2026-04-17 17:51:51] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 17:51:51] [hardware.real_g1] [INFO] - Unitree SDK2 初始化成功：已连接（G1ArmActionClient）。net_if=wlo1
+[2026-04-17 17:52:01] [hardware.real_g1] [WARNING] - ExecuteAction 返回非零：action_id=99 exec_id=99 code=3102
+[2026-04-17 17:52:01] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 17:52:11] [hardware.real_g1] [WARNING] - ExecuteAction 返回非零：action_id=26 exec_id=26 code=3102
+[2026-04-17 17:52:11] [hardware.real_g1] [INFO] - play_action 已发送：action_id=26
+[2026-04-17 18:24:50] [system.main] [INFO] - 用户请求退出。
+[2026-04-17 18:24:50] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 18:24:55] [system.main] [INFO] - System Initializing...
+[2026-04-17 18:24:55] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye', 'custom_dance']
+[2026-04-17 18:24:55] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:24:55] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 18:24:55] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:25:11] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 18:25:11] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 18:25:11] [system.main] [INFO] - [SystemCore] 机器人动作下发: wave_hand -> 
+[2026-04-17 18:25:11] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 18:25:11] [system.main] [INFO] - [SystemCore] 已播报: 好的，我来挥挥手。
+[2026-04-17 18:25:11] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 18:25:12] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:25:12] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 18:25:12] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:25:12] [hardware.real_g1] [INFO] - Unitree SDK2 初始化成功：已连接（G1ArmActionClient）。net_if=wlo1
+[2026-04-17 18:25:22] [hardware.real_g1] [WARNING] - ExecuteAction 返回非零：action_id=99 exec_id=99 code=3102
+[2026-04-17 18:25:22] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 18:25:32] [hardware.real_g1] [WARNING] - ExecuteAction 返回非零：action_id=26 exec_id=26 code=3102
+[2026-04-17 18:25:32] [hardware.real_g1] [INFO] - play_action 已发送：action_id=26
+[2026-04-17 18:25:52] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 18:25:52] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 18:25:52] [system.main] [INFO] - [SystemCore] 机器人动作下发: wave_hand -> 
+[2026-04-17 18:25:52] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 18:25:52] [system.main] [INFO] - [SystemCore] 已播报: 好的，我来挥挥手。
+[2026-04-17 18:25:52] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 18:25:52] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:25:52] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 18:25:52] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:26:02] [hardware.real_g1] [WARNING] - ExecuteAction 返回非零：action_id=99 exec_id=99 code=3102
+[2026-04-17 18:26:02] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 18:26:12] [hardware.real_g1] [WARNING] - ExecuteAction 返回非零：action_id=26 exec_id=26 code=3102
+[2026-04-17 18:26:12] [hardware.real_g1] [INFO] - play_action 已发送：action_id=26
+[2026-04-17 18:26:14] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 18:26:30] [system.main] [INFO] - 收到 Ctrl+C，用户中断。
+[2026-04-17 18:26:30] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 18:26:37] [system.main] [INFO] - System Initializing...
+[2026-04-17 18:26:37] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye', 'custom_dance']
+[2026-04-17 18:26:37] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:26:37] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 18:26:37] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:26:49] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 18:26:49] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 18:26:49] [system.main] [INFO] - [SystemCore] 机器人动作下发: wave_hand -> 
+[2026-04-17 18:26:49] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 18:26:49] [system.main] [INFO] - [SystemCore] 已播报: 好的，我来挥挥手。
+[2026-04-17 18:26:49] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 18:26:49] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:26:49] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 18:26:49] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:26:50] [hardware.real_g1] [INFO] - Unitree SDK2 初始化成功：已连接（G1ArmActionClient）。net_if=wlo1
+[2026-04-17 18:27:00] [hardware.real_g1] [WARNING] - ExecuteAction 返回非零：action_id=99 exec_id=99 code=3102
+[2026-04-17 18:27:00] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 18:27:10] [hardware.real_g1] [WARNING] - ExecuteAction 返回非零：action_id=26 exec_id=26 code=3102
+[2026-04-17 18:27:10] [hardware.real_g1] [INFO] - play_action 已发送：action_id=26
+[2026-04-17 18:27:40] [system.main] [INFO] - 收到 Ctrl+C，用户中断。
+[2026-04-17 18:27:40] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 18:28:07] [system.main] [INFO] - System Initializing...
+[2026-04-17 18:28:07] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye', 'custom_dance']
+[2026-04-17 18:28:07] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:28:07] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 18:28:07] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:28:09] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 18:28:09] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 18:28:09] [system.main] [INFO] - [SystemCore] 机器人动作下发: wave_hand -> 
+[2026-04-17 18:28:09] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 18:28:09] [system.main] [INFO] - [SystemCore] 已播报: 好的，我来挥挥手。
+[2026-04-17 18:28:09] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 18:28:10] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:28:10] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 18:28:10] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:28:10] [hardware.real_g1] [INFO] - Unitree SDK2 初始化成功：已连接（G1ArmActionClient）。net_if=wlo1
+[2026-04-17 18:28:19] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 18:28:19] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 18:28:19] [system.main] [INFO] - [SystemCore] 机器人动作下发: greet -> 
+[2026-04-17 18:28:19] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 18:28:19] [system.main] [INFO] - [SystemCore] 已播报: 您好，我在。
+[2026-04-17 18:28:19] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 18:28:19] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:28:19] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 18:28:19] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:28:20] [hardware.real_g1] [WARNING] - ExecuteAction 返回非零：action_id=99 exec_id=99 code=3102
+[2026-04-17 18:28:20] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 18:28:30] [hardware.real_g1] [WARNING] - ExecuteAction 返回非零：action_id=26 exec_id=26 code=3102
+[2026-04-17 18:28:30] [hardware.real_g1] [INFO] - play_action 已发送：action_id=26
+[2026-04-17 18:28:32] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 18:28:32] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_IOT_ACTION
+[2026-04-17 18:28:32] [system.main] [INFO] - [SystemCore] IoT 动作下发: device_id=light.living_room action=light_on
+[2026-04-17 18:28:32] [system.main] [INFO] - [IoTController] 控制设备 light.living_room 动作: light_on
+[2026-04-17 18:28:32] [system.main] [INFO] - [FSM] EXECUTING_IOT_ACTION -> SPEAKING
+[2026-04-17 18:28:32] [system.main] [INFO] - [SystemCore] 已播报: 好的，我来开灯。
+[2026-04-17 18:28:32] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 18:28:33] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:28:33] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 18:28:33] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:28:41] [hardware.real_g1] [WARNING] - ExecuteAction 返回非零：action_id=99 exec_id=99 code=3102
+[2026-04-17 18:28:41] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 18:28:41] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 18:28:51] [hardware.real_g1] [WARNING] - ExecuteAction 返回非零：action_id=26 exec_id=26 code=3102
+[2026-04-17 18:28:51] [hardware.real_g1] [INFO] - play_action 已发送：action_id=26
+[2026-04-17 18:29:01] [system.main] [ERROR] - Qwen 请求失败（已返回安全兜底）。error=HTTPSConnectionPool(host='dashscope.aliyuncs.com', port=443): Read timed out. (read timeout=20)
+[2026-04-17 18:29:01] [system.main] [INFO] - [FSM] PARSING_INTENT -> SPEAKING
+[2026-04-17 18:29:01] [system.main] [INFO] - [SystemCore] 已播报: 抱歉，我没听清，您能再说一遍吗？
+[2026-04-17 18:29:01] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 18:29:01] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:29:01] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 18:29:01] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:29:01] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 18:29:23] [system.main] [ERROR] - Qwen 请求失败（已返回安全兜底）。error=HTTPSConnectionPool(host='dashscope.aliyuncs.com', port=443): Read timed out. (read timeout=20)
+[2026-04-17 18:29:23] [system.main] [INFO] - [FSM] PARSING_INTENT -> SPEAKING
+[2026-04-17 18:29:23] [system.main] [INFO] - [SystemCore] 已播报: 抱歉，我没听清，您能再说一遍吗？
+[2026-04-17 18:29:23] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 18:29:23] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:29:23] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 18:29:23] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:29:23] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 18:29:43] [system.main] [ERROR] - Qwen 请求失败（已返回安全兜底）。error=HTTPSConnectionPool(host='dashscope.aliyuncs.com', port=443): Max retries exceeded with url: /compatible-mode/v1/chat/completions (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1017)')))
+[2026-04-17 18:29:43] [system.main] [INFO] - [FSM] PARSING_INTENT -> SPEAKING
+[2026-04-17 18:29:43] [system.main] [INFO] - [SystemCore] 已播报: 抱歉，我没听清，您能再说一遍吗？
+[2026-04-17 18:29:43] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 18:29:43] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:29:43] [system.main] [INFO] - [VisionDetector] 跌倒检测: 未检测到
+[2026-04-17 18:29:43] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:29:47] [system.main] [INFO] - 用户请求退出。
+[2026-04-17 18:29:47] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 18:45:46] [system.main] [INFO] - System Initializing...
+[2026-04-17 18:45:46] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye', 'custom_dance']
+[2026-04-17 18:45:46] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:45:46] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:46:02] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 18:46:07] [system.main] [ERROR] - Qwen 请求失败（已返回安全兜底）。error=HTTPSConnectionPool(host='dashscope.aliyuncs.com', port=443): Read timed out. (read timeout=5)
+[2026-04-17 18:46:07] [system.main] [INFO] - [LLM FALLBACK] 使用兜底回复
+[2026-04-17 18:46:07] [system.main] [INFO] - [FSM] PARSING_INTENT -> SPEAKING
+[2026-04-17 18:46:07] [system.main] [INFO] - [SystemCore] 已播报: 抱歉，我没听清，您能再说一遍吗？
+[2026-04-17 18:46:07] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 18:46:07] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:46:07] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:47:41] [system.main] [INFO] - 用户请求退出。
+[2026-04-17 18:47:41] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 18:47:43] [system.main] [INFO] - System Initializing...
+[2026-04-17 18:47:43] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye', 'custom_dance']
+[2026-04-17 18:47:43] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:47:43] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:48:37] [system.main] [INFO] - 用户请求退出。
+[2026-04-17 18:48:37] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 18:48:39] [system.main] [INFO] - System Initializing...
+[2026-04-17 18:48:39] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye', 'custom_dance']
+[2026-04-17 18:48:39] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:48:39] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:48:45] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 18:48:45] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 18:48:45] [system.main] [INFO] - [SystemCore] 机器人动作下发: greet -> 
+[2026-04-17 18:48:45] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 18:48:45] [system.main] [INFO] - [SystemCore] 已播报: 您好，我在。
+[2026-04-17 18:48:45] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 18:48:46] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:48:46] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:49:07] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 18:49:11] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_IOT_ACTION
+[2026-04-17 18:49:11] [system.main] [INFO] - [SystemCore] IoT 动作下发: device_id=light_default action=ac_on
+[2026-04-17 18:49:11] [system.main] [INFO] - [IoTController] 控制设备 light_default 动作: ac_on
+[2026-04-17 18:49:11] [system.main] [INFO] - [FSM] EXECUTING_IOT_ACTION -> SPEAKING
+[2026-04-17 18:49:11] [system.main] [INFO] - [SystemCore] 已播报: 已为您打开空调，调至适宜温度。
+[2026-04-17 18:49:11] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 18:49:12] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:49:12] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:55:41] [system.main] [INFO] - 用户请求退出。
+[2026-04-17 18:55:41] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 18:55:50] [system.main] [INFO] - System Initializing...
+[2026-04-17 18:55:50] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye', 'custom_dance']
+[2026-04-17 18:55:50] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:55:50] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:55:58] [system.main] [INFO] - 用户请求退出。
+[2026-04-17 18:55:58] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 18:56:15] [system.main] [INFO] - System Initializing...
+[2026-04-17 18:56:15] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye', 'custom_dance']
+[2026-04-17 18:56:15] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:56:15] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 18:56:18] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 18:56:18] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 18:56:18] [system.main] [INFO] - [SystemCore] 机器人动作下发: greet -> 
+[2026-04-17 18:56:19] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 18:56:19] [system.main] [INFO] - [SystemCore] 已播报: 您好，我在。
+[2026-04-17 18:56:19] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 18:56:20] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 18:56:20] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 19:00:18] [system.main] [INFO] - 用户请求退出。
+[2026-04-17 19:00:18] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 20:02:48] [system.main] [INFO] - System Initializing...
+[2026-04-17 20:02:48] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-17 20:02:48] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:02:48] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:03:01] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 20:03:01] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 20:03:01] [system.main] [INFO] - [SystemCore] 机器人动作下发: wave_hand -> 
+[2026-04-17 20:03:01] [hardware.real_g1] [INFO] - Unitree SDK2 初始化成功：已连接（G1ArmActionClient）。net_if=wlo1
+[2026-04-17 20:03:02] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 20:03:02] [system.main] [INFO] - [SystemCore] 已播报: 好的，我来挥挥手。
+[2026-04-17 20:03:02] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 20:03:02] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:03:02] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:03:12] [hardware.real_g1] [INFO] - [SDK DEGRADED] 动作已发送（可能未实际执行）：action_id=99 code=3102
+[2026-04-17 20:03:12] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 20:03:22] [hardware.real_g1] [INFO] - [SDK DEGRADED] 动作已发送（可能未实际执行）：action_id=26 code=3102
+[2026-04-17 20:03:22] [hardware.real_g1] [INFO] - play_action 已发送：action_id=26
+[2026-04-17 20:03:26] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 20:03:26] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 20:03:26] [system.main] [INFO] - [SystemCore] 机器人动作下发: wave_hand -> 
+[2026-04-17 20:03:27] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 20:03:27] [system.main] [INFO] - [SystemCore] 已播报: 好的，我来挥挥手。
+[2026-04-17 20:03:27] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 20:03:27] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:03:27] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:03:36] [hardware.real_g1] [INFO] - [SDK DEGRADED] 动作已发送（可能未实际执行）：action_id=99 code=3102
+[2026-04-17 20:03:36] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 20:03:40] [system.main] [INFO] - 收到 Ctrl+C，用户中断。
+[2026-04-17 20:03:40] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 20:03:45] [system.main] [INFO] - System Initializing...
+[2026-04-17 20:03:45] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-17 20:03:45] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:03:45] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:03:52] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 20:03:52] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 20:03:52] [system.main] [INFO] - [SystemCore] 机器人动作下发: wave_hand -> 
+[2026-04-17 20:03:53] [hardware.real_g1] [INFO] - Unitree SDK2 初始化成功：已连接（G1ArmActionClient）。net_if=wlo1
+[2026-04-17 20:03:53] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 20:03:53] [system.main] [INFO] - [SystemCore] 已播报: 好的，我来挥挥手。
+[2026-04-17 20:03:53] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 20:03:53] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:03:53] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:04:03] [hardware.real_g1] [INFO] - [SDK DEGRADED] 动作已发送（可能未实际执行）：action_id=99 code=3102
+[2026-04-17 20:04:03] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 20:04:13] [hardware.real_g1] [INFO] - [SDK DEGRADED] 动作已发送（可能未实际执行）：action_id=26 code=3102
+[2026-04-17 20:04:13] [hardware.real_g1] [INFO] - play_action 已发送：action_id=26
+[2026-04-17 20:05:03] [system.main] [INFO] - 收到 Ctrl+C，用户中断。
+[2026-04-17 20:05:03] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 20:05:06] [system.main] [INFO] - System Initializing...
+[2026-04-17 20:05:06] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-17 20:05:06] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:05:06] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:05:17] [system.main] [INFO] - 收到 Ctrl+C，用户中断。
+[2026-04-17 20:05:17] [system.main] [INFO] - 系统安全关闭
+[2026-04-17 20:05:24] [system.main] [INFO] - System Initializing...
+[2026-04-17 20:05:24] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-17 20:05:24] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:05:24] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:05:25] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 20:05:25] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 20:05:25] [system.main] [INFO] - [SystemCore] 机器人动作下发: wave_hand -> 
+[2026-04-17 20:05:26] [hardware.real_g1] [INFO] - Unitree SDK2 初始化成功：已连接（G1ArmActionClient）。net_if=enp108s0
+[2026-04-17 20:05:26] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 20:05:26] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 20:05:26] [system.main] [INFO] - [SystemCore] 已播报: 好的，我来挥挥手。
+[2026-04-17 20:05:26] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 20:05:27] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:05:27] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:05:36] [hardware.real_g1] [INFO] - [SDK DEGRADED] 动作已发送（可能未实际执行）：action_id=26 code=3104
+[2026-04-17 20:05:36] [hardware.real_g1] [INFO] - play_action 已发送：action_id=26
+[2026-04-17 20:05:51] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 20:05:51] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 20:05:51] [system.main] [INFO] - [SystemCore] 机器人动作下发: wave_hand -> 
+[2026-04-17 20:05:51] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 20:05:52] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 20:05:52] [system.main] [INFO] - [SystemCore] 已播报: 好的，我来挥挥手。
+[2026-04-17 20:05:52] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 20:05:52] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:05:52] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:06:01] [hardware.real_g1] [INFO] - [SDK DEGRADED] 动作已发送（可能未实际执行）：action_id=26 code=3104
+[2026-04-17 20:06:01] [hardware.real_g1] [INFO] - play_action 已发送：action_id=26
+[2026-04-17 20:06:45] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 20:06:50] [system.main] [ERROR] - Qwen 请求失败（已返回安全兜底）。error=HTTPSConnectionPool(host='dashscope.aliyuncs.com', port=443): Read timed out. (read timeout=5)
+[2026-04-17 20:06:50] [system.main] [INFO] - [LLM FALLBACK] 使用兜底回复
+[2026-04-17 20:06:50] [system.main] [INFO] - [FSM] PARSING_INTENT -> SPEAKING
+[2026-04-17 20:06:50] [system.main] [INFO] - [SystemCore] 已播报: 抱歉，我没听清，您能再说一遍吗？
+[2026-04-17 20:06:50] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 20:06:51] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:06:51] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:06:51] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 20:06:51] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 20:06:51] [system.main] [INFO] - [SystemCore] 机器人动作下发: clap -> 
+[2026-04-17 20:06:51] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 20:06:52] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 20:06:52] [system.main] [INFO] - [SystemCore] 已播报: 好的，我来鼓掌。
+[2026-04-17 20:06:52] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 20:06:52] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:06:52] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:06:58] [hardware.real_g1] [INFO] - play_action 已发送：action_id=17
+[2026-04-17 20:07:21] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 20:07:26] [system.main] [ERROR] - Qwen 请求失败（已返回安全兜底）。error=HTTPSConnectionPool(host='dashscope.aliyuncs.com', port=443): Read timed out. (read timeout=5)
+[2026-04-17 20:07:26] [system.main] [INFO] - [LLM FALLBACK] 使用兜底回复
+[2026-04-17 20:07:26] [system.main] [INFO] - [FSM] PARSING_INTENT -> SPEAKING
+[2026-04-17 20:07:26] [system.main] [INFO] - [SystemCore] 已播报: 抱歉，我没听清，您能再说一遍吗？
+[2026-04-17 20:07:26] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 20:07:26] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:07:26] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:07:44] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 20:07:52] [system.main] [ERROR] - Qwen 请求失败（已返回安全兜底）。error=HTTPSConnectionPool(host='dashscope.aliyuncs.com', port=443): Read timed out. (read timeout=5)
+[2026-04-17 20:07:52] [system.main] [INFO] - [LLM FALLBACK] 使用兜底回复
+[2026-04-17 20:07:52] [system.main] [INFO] - [FSM] PARSING_INTENT -> SPEAKING
+[2026-04-17 20:07:52] [system.main] [INFO] - [SystemCore] 已播报: 抱歉，我没听清，您能再说一遍吗？
+[2026-04-17 20:07:52] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 20:07:52] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:07:52] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:08:43] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 20:08:43] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 20:08:43] [system.main] [INFO] - [SystemCore] 机器人动作下发: greet -> 
+[2026-04-17 20:08:44] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 20:08:45] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 20:08:45] [system.main] [INFO] - [SystemCore] 已播报: 您好，我在。
+[2026-04-17 20:08:45] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 20:08:45] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:08:45] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:08:54] [hardware.real_g1] [INFO] - play_action 已发送：action_id=26
+[2026-04-17 20:09:05] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 20:09:05] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 20:09:05] [system.main] [INFO] - [SystemCore] 机器人动作下发: greet -> 
+[2026-04-17 20:09:06] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 20:09:07] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 20:09:07] [system.main] [INFO] - [SystemCore] 已播报: 您好，我在。
+[2026-04-17 20:09:07] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 20:09:07] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:09:07] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:09:16] [hardware.real_g1] [INFO] - play_action 已发送：action_id=26
+[2026-04-17 20:09:50] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 20:09:50] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 20:09:50] [system.main] [INFO] - [SystemCore] 机器人动作下发: greet -> 
+[2026-04-17 20:09:50] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 20:09:51] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 20:09:51] [system.main] [INFO] - [SystemCore] 已播报: 您好，我在。
+[2026-04-17 20:09:51] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 20:09:51] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:09:51] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:10:00] [hardware.real_g1] [INFO] - [SDK DEGRADED] 动作已发送（可能未实际执行）：action_id=26 code=3104
+[2026-04-17 20:10:00] [hardware.real_g1] [INFO] - play_action 已发送：action_id=26
+[2026-04-17 20:10:24] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 20:10:24] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 20:10:24] [system.main] [INFO] - [SystemCore] 机器人动作下发: goodbye -> 
+[2026-04-17 20:10:25] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 20:10:25] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 20:10:25] [system.main] [INFO] - [SystemCore] 已播报: 好的，再见。
+[2026-04-17 20:10:25] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 20:10:26] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:10:26] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:10:32] [hardware.real_g1] [INFO] - play_action 已发送：action_id=25
+[2026-04-17 20:10:39] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 20:10:39] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 20:10:39] [system.main] [INFO] - [SystemCore] 机器人动作下发: greet -> 
+[2026-04-17 20:10:39] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 20:10:40] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 20:10:40] [system.main] [INFO] - [SystemCore] 已播报: 您好，我在。
+[2026-04-17 20:10:40] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 20:10:40] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:10:40] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:10:48] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-17 20:10:48] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-17 20:10:48] [system.main] [INFO] - [SystemCore] 机器人动作下发: goodbye -> 
+[2026-04-17 20:10:49] [hardware.real_g1] [INFO] - play_action 已发送：action_id=26
+[2026-04-17 20:10:50] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-17 20:10:50] [system.main] [INFO] - [SystemCore] 已播报: 好的，再见。
+[2026-04-17 20:10:50] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-17 20:10:50] [hardware.real_g1] [INFO] - play_action 已发送：action_id=99
+[2026-04-17 20:10:50] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-17 20:10:50] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-17 20:10:57] [hardware.real_g1] [INFO] - play_action 已发送：action_id=25
+[2026-04-17 20:11:05] [system.main] [INFO] - 用户请求退出。
+[2026-04-17 20:11:05] [system.main] [INFO] - 系统安全关闭
+[2026-04-18 12:45:59] [system.main] [INFO] - System Initializing...
+[2026-04-18 12:45:59] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-18 12:45:59] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-18 12:45:59] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-18 12:45:59] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-18 12:46:07] [system.main] [INFO] - 收到 fall_alert 事件
+[2026-04-18 12:46:08] [system.main] [INFO] - 收到 Ctrl+C，用户中断。
+[2026-04-18 12:46:08] [system.main] [INFO] - 系统安全关闭
+[2026-04-18 12:46:31] [system.main] [INFO] - System Initializing...
+[2026-04-18 12:46:31] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-18 12:46:31] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-18 12:46:31] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-18 12:46:31] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-18 12:47:02] [system.main] [INFO] - 收到 fall_alert 事件
+[2026-04-18 12:47:04] [system.main] [INFO] - 收到 fall_alert 事件
+[2026-04-18 12:47:05] [system.main] [INFO] - 收到 fall_alert 事件
+[2026-04-18 12:48:06] [system.main] [INFO] - 收到 Ctrl+C，用户中断。
+[2026-04-18 12:48:06] [system.main] [INFO] - 系统安全关闭
