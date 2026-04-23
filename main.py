@@ -141,6 +141,9 @@ class SystemCore:
             self._set_state(self.CHECKING_VISION)
             if self.vision.check_fall_status(self._last_user_input):
                 self._set_state(self.EMERGENCY)
+                # 比赛演示期的「上层中断」机制：清空后续动作并尽量停止当前任务；
+                # 用于紧急事件优先，不等同于机器人底层实时急停。
+                self.executor.interrupt_current_action()
                 print("\n🗣️ G1 管家: 检测到跌倒，启动报警！\n")
                 self.iot.execute_device_action(device_id="light_all", action="red_blink")
                 self.logger.warning("[SystemCore] 紧急跌倒事件触发，已报警并让灯光变红。")
@@ -163,6 +166,9 @@ class SystemCore:
             # 演示更直观：当轮输入包含“测试跌倒”则立即触发紧急流程（不用等下一轮）
             if self.vision.check_fall_status(user_input):
                 self._set_state(self.EMERGENCY)
+                # 比赛演示期的「上层中断」机制：清空后续动作并尽量停止当前任务；
+                # 用于紧急事件优先，不等同于机器人底层实时急停。
+                self.executor.interrupt_current_action()
                 print("\n🗣️ G1 管家: 检测到跌倒，启动报警！\n")
                 self.iot.execute_device_action(device_id="light_all", action="red_blink")
                 self.logger.warning("[SystemCore] 紧急跌倒事件触发（手动测试），已报警并让灯光变红。")
@@ -180,11 +186,12 @@ class SystemCore:
             if category == "robot_action":
                 # 机器人动作：只下发给 ActionExecutor
                 self._set_state(self.EXECUTING_ROBOT_ACTION)
-                self.logger.info(f"[SystemCore] 机器人动作下发: {action} -> {target}")
                 if action in ("navigate", "move", "stop"):
-                    # 当前比赛 MVP：底盘/导航仅记录日志，不做真实调用（避免翻车）
-                    self.logger.info("[NAV MOCK] 暂未接入 ROS2/Nav2：action=%s target=%s", action, target)
+                    self.logger.info("[SystemCore] 移动相关动作下发: %s -> %s", action, target)
+                    self.executor.submit_action(action, target)
+                    time.sleep(0.3)
                 else:
+                    self.logger.info(f"[SystemCore] 机器人动作下发: {action} -> {target}")
                     self.executor.submit_action(action, target)
                     # 比赛演示期的简化同步策略：给后台动作线程一点时间完成主要动作
                     # 注意：这不是严格的“动作完成检测”，只是为了“播报-动作-等待下一条输入”更自然。

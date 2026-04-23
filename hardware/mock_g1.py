@@ -51,7 +51,17 @@ class MockG1Robot:
         模拟底盘控制（比赛开发期不做真实运动，避免误动/翻车）。
         """
         cmd_clean = (cmd or "").strip()
-        print(f"[MOCK] 底盘控制命令: {cmd_clean}")
+        lines = {
+            "move:forward": "[MOCK] 底盘前进中",
+            "move:backward": "[MOCK] 底盘后退中",
+            "move:left": "[MOCK] 底盘向左移动",
+            "move:right": "[MOCK] 底盘向右移动",
+            "navigate:bedroom": "[MOCK] 正在前往卧室",
+            "navigate:living_room": "[MOCK] 正在前往客厅",
+            "stop": "[MOCK] 底盘紧急停止",
+        }
+        print(lines.get(cmd_clean, f"[MOCK] 底盘控制命令: {cmd_clean}"))
+        time.sleep(random.uniform(0.5, 1.0))
         return True
 
     def speak(self, text: str) -> None:

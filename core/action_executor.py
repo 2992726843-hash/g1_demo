@@ -301,11 +301,37 @@ class ActionExecutor:
         """
         底盘/导航/运动（loco_sdk）。
 
-        当前阶段尚未接入 ROS2/Nav2，因此此处仅做 Mock 日志打印，不做真实调用。
+        比赛演示：按 system_config.yaml 的 mode 走 mock 闭环或 real 占位日志；不做真导航。
         """
         self._control_mode = "loco_sdk"
         try:
-            logger.info("[LOCO MOCK] 执行底盘运动指令: action=%s, target=%s", action_name, target)
+            mode = str(ConfigLoader().get_nested("mode", default="mock") or "mock").strip().lower()
+            tgt = (target or "").strip()
+            if action_name == "move" and tgt:
+                cmd = f"move:{tgt}"
+            elif action_name == "navigate" and tgt:
+                cmd = f"navigate:{tgt}"
+            elif action_name == "stop":
+                cmd = "stop"
+            else:
+                cmd = action_name
+
+            if mode == "mock":
+                logger.info("当前为 MOCK 模式，使用虚拟机器人执行底盘动作。")
+                from hardware.mock_g1 import MockG1Robot  # type: ignore
+
+                if self._mock_robot is None:
+                    self._mock_robot = MockG1Robot()
+                mock_robot = self._mock_robot
+                mock_robot.loco_control(cmd)
+            else:
+                logger.info(
+                    "[REAL LOCO RESERVED] 真实底盘控制暂未接入：action=%s target=%s",
+                    action_name,
+                    target,
+                )
+        except Exception:
+            logger.exception("loco_sdk 执行异常：action=%s target=%s", action_name, target)
         finally:
             self._control_mode = "idle"
             self._interrupt_event.clear()

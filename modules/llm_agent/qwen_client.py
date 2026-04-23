@@ -233,9 +233,18 @@ class QwenAgent:
         比赛场景短路规则：
         - 先求稳：常见指令直接给确定输出，不走网络
         - 避免幻觉：把动作固定在白名单里
+        - 比赛环境优先使用本地 shortcut，避免 LLM 网络波动。
         """
         t = (user_text or "").strip()
         if not t:
+            return None
+
+        # 比赛阶段 shortcut 只处理「单意图短句」；复合任务交给后续 LLM/API 解析链路，
+        # 不在 shortcut 层强行截断，避免「向前走两步，再挥挥手」因含「挥手」被误判为单动作。
+        if any(m in t for m in ("然后", "并且", "同时", ",", "，", "接着")):
+            return None
+        # 「再」作连接词时拦截；先去掉「再见」避免该词内的「再」字误判为复合句。
+        if "再" in t.replace("再见", ""):
             return None
 
         # 只做非常简单的关键词匹配（不引入复杂 NLP）
@@ -245,9 +254,9 @@ class QwenAgent:
             return {"category": "robot_action", "action": "clap", "target": "", "reply": "好的，我来鼓掌。"}
         if "飞吻" in t:
             return {"category": "robot_action", "action": "blow_kiss", "target": "", "reply": "好的，送您一个飞吻。"}
-        if t in ("你好", "您好", "嗨"):
+        if any(k in t for k in ("打招呼", "打个招呼", "你好啊", "你好", "您好", "嗨")):
             return {"category": "robot_action", "action": "greet", "target": "", "reply": "您好，我在。"}
-        if t in ("再见", "拜拜"):
+        if any(k in t for k in ("再见", "拜拜", "告别")):
             return {"category": "robot_action", "action": "goodbye", "target": "", "reply": "好的，再见。"}
         if "开灯" in t:
             return {
@@ -262,6 +271,20 @@ class QwenAgent:
                 "action": "light_off",
                 "target": "light.living_room",
                 "reply": "好的，我来关灯。",
+            }
+        if any(k in t for k in ("关空调", "空调关掉")):
+            return {
+                "category": "iot_action",
+                "action": "ac_off",
+                "target": "climate.bedroom_ac",
+                "reply": "好的，我来帮您关闭空调。",
+            }
+        if any(k in t for k in ("有点冷", "有点凉", "有点热", "太冷了")):
+            return {
+                "category": "iot_action",
+                "action": "ac_on",
+                "target": "climate.bedroom_ac",
+                "reply": "好的，我来帮您打开空调。",
             }
 
         return None
