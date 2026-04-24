@@ -1,0 +1,1142 @@
+CRAI 智能家电创新赛项目对接书
+项目名称暂定
+
+面向居家养老场景的宇树 G1 适老化智能家电联动管家系统
+
+也可以后续优化成：
+
+基于宇树 G1 的适老化具身智能家居服务系统
+
+一、项目背景
+
+本项目用于参加中国机器人及人工智能大赛 CRAI 智能家电创新赛道。
+
+项目核心不是“自主研发机器人本体”，而是把宇树 G1 EDU 作为一个具身交互终端，接入大模型、语音交互、视觉检测、Home Assistant 智能家居联动，最终形成一个面向老年人居家生活的智能家电服务系统 Demo。
+
+项目强调：
+
+稳定可演示
+适老化应用场景
+家电联动闭环
+机器人具身交互
+视觉安全辅助
+大模型自然语言调度
+
+当前比赛形式大概率是视频提交 + 代码上传 + 答辩，因此系统不追求临场复杂实时能力，而追求可录制、可复现、可解释、可答辩。
+
+二、项目总战略
+
+本项目采取的是降维打击策略：
+
+不做高风险内容：
+
+不做复杂物理抓取
+不深入 C++ 底层控制
+不把 Nav2 真自主导航作为主线
+不追求机械结构创新
+不追求全屋复杂设备矩阵
+
+主线改为：
+
+语音 / 文本指令
+    ↓
+大模型意图理解
+    ↓
+主控状态机 Task Orchestrator
+    ↓
+机器人动作 + 家电联动 + 视觉事件处理
+    ↓
+语音/文本反馈
+
+核心原则：
+
+稳定大于一切，表现力决定上限。
+
+三、比赛定位
+
+本项目应该继续按智能家电创新赛来讲，而不是机器人创新赛。
+
+原因：
+
+本项目创新主体不是 G1 机器人本体，而是智能家居服务系统。
+G1 是系统里的移动交互终端，不是自主研发机器人本体。
+项目核心场景包括智能照明、药盒提示、跌倒报警、起夜辅助、老人语言理解，这些更贴合智能家电/智慧养老。
+答辩口径应该强调：
+智能家电联动
+适老化智能空间
+家庭安全辅助
+多模态交互
+工程闭环
+
+不要把项目讲成：
+
+“我们做了一台机器人。”
+
+应该讲成：
+
+“我们构建了一个以宇树 G1 为具身交互终端的适老化智能家居系统。”
+
+四、最终展示目标
+
+最终比赛视频建议展示 3 个核心场景。
+
+场景 1：夜间起夜辅助
+用户指令
+我想去卫生间 / 我晚上要起夜
+系统流程
+用户语音/文本输入
+→ LLM 或 shortcut 判断为 night_mode
+→ 主控调用 IoT 场景接口
+→ 打开客厅灯/小夜灯/路径灯带
+→ G1 做引导动作或语音提示
+→ 系统播报：我已经帮您打开夜灯，请慢一点走
+展示重点
+适老化
+家电主动辅助
+灯光引导
+机器人陪伴感
+场景 2：跌倒报警
+触发方式
+
+真实视觉后续接入 YOLO；当前已实现 HTTP 跌倒事件接入，也支持文本“测试跌倒”手动触发。
+
+系统流程
+视觉端检测到跌倒
+→ POST /api/vision/fall_event 到主控 8765 端口
+→ 主控进入 EMERGENCY 状态
+→ 中断当前动作
+→ 调用 IoT fall_alert 场景
+→ 灯带变红/闪烁
+→ 报警器插座打开
+→ 机器人语音询问并呼救
+展示重点
+视觉安全检测
+高优先级中断
+家电报警联动
+闭环响应
+场景 3：用药提醒 / 药盒定位
+用户指令
+帮我找药 / 我该吃药了 / 药在哪里
+系统流程
+用户输入
+→ LLM 判断 medicine_mode
+→ 主控调用 IoT medicine_mode
+→ 打开主灯
+→ 点亮药盒附近灯带/提示灯
+→ G1 挥手或指示
+→ 播报：药盒已经亮起来了，请注意按时服药
+展示重点
+适老化用药辅助
+智能家电与机器人协同
+低风险替代“机器人拿药”
+避免真实抓取翻车
+五、硬件环境
+1. 机器人平台
+
+机器人：
+
+Unitree G1 EDU
+
+机载计算平台：
+
+Jetson Orin NX
+
+机载系统：
+
+Ubuntu 20.04
+
+机器人侧用途：
+
+运行宇树底层驱动
+后续部署 YOLO 跌倒检测
+后续可能读取摄像头
+可选运行视觉事件发送端
+可选做导航/雷达处理，但不是当前主线
+2. 主控 PC
+
+用户本人电脑：
+
+Ubuntu 22.04 双系统
+ROS 2 Humble
+i9 + RTX 4060
+
+主控 PC 负责：
+
+运行 g1_smarthome_ws/main.py
+运行大模型调用模块
+运行 Home Assistant
+运行 IoT 子服务
+调用 Unitree SDK2 Python 控制 G1 动作
+录制比赛视频
+作为系统总中枢
+3. 智能家居设备建议
+
+最低配置：
+
+路由器 × 1
+智能灯泡 × 1
+RGB 智能灯带 × 1
+智能插座 × 2
+小台灯/小夜灯 × 1
+报警器/蜂鸣器/小音箱 × 1
+
+设备用途：
+
+设备	用途
+智能灯泡	客厅/卧室主照明
+RGB 灯带	路径引导、跌倒红色报警、药盒提示
+智能插座 1	控制小夜灯/台灯
+智能插座 2	控制报警器/蜂鸣器
+路由器	搭建稳定局域网，连接 PC、G1、智能设备
+
+不建议购买：
+
+NAS
+绿联虚拟机设备
+复杂 Zigbee 网关
+昂贵智能中枢
+
+原因：
+
+当前项目不需要 NAS
+比赛系统应尽量简单
+Home Assistant 跑在主控 PC 上即可
+Docker 部署足够
+六、网络架构
+
+建议统一使用一个独立路由器搭建局域网。
+
+路由器 WiFi / LAN
+├── 主控 PC Ubuntu 22.04
+├── Unitree G1 EDU
+├── 智能灯泡
+├── 智能灯带
+├── 智能插座
+└── 其他 IoT 设备
+
+推荐原则：
+
+所有设备连同一个局域网。
+不依赖校园网复杂认证。
+不依赖手机热点作为正式演示方案。
+IP 地址尽量固定。
+Home Assistant 和 IoT 服务最终都跑在主控 PC。
+七、软件架构总览
+
+当前仓库结构为：
+
+g1_smarthome_ws/
+├── main.py
+├── requirements.txt
+├── readme.txt
+├── logs/
+│   └── system.log
+├── configs/
+│   └── system_config.yaml
+├── core/
+│   ├── utils.py
+│   ├── action_executor.py
+│   ├── task_orchestrator.py
+│   └── memory_manager.py
+├── modules/
+│   ├── llm_agent/
+│   │   └── qwen_client.py
+│   ├── iot/
+│   │   └── iot_controller.py
+│   ├── iot_bridge/
+│   │   └── __init__.py
+│   └── vision_yolo/
+│       └── __init__.py
+├── iot_service/
+│   ├── app.py
+│   ├── ha_client.py
+│   ├── config.py
+│   ├── config.yaml
+│   ├── devices.yaml
+│   ├── test_integration.py
+│   ├── requirements.txt
+│   └── README.md
+├── hardware/
+│   ├── mock_g1.py
+│   ├── real_g1.py
+│   └── unitree_sdk2_python/
+│       ├── example/
+│       └── unitree_sdk2py/
+└── .vscode/
+
+整体结构是：
+
+主控程序 main.py
+    ↓
+LLM 意图模块 qwen_client.py
+    ↓
+动作执行器 action_executor.py
+    ↓
+MockG1 / RealG1
+
+同时：
+
+main.py
+    ↓
+IoTController HTTP client
+    ↓
+iot_service FastAPI
+    ↓
+Home Assistant
+    ↓
+真实智能家电
+
+同时：
+
+视觉检测端
+    ↓
+POST /api/vision/fall_event
+    ↓
+main.py 紧急事件处理
+八、当前已完成模块
+1. 主控入口 main.py
+
+当前职责：
+
+系统总入口
+主控 FSM
+读取用户输入
+调用 LLM 解析意图
+分类执行机器人动作 / IoT 动作 / 普通聊天
+接入跌倒事件
+调用 TTS 或打印播报
+管理系统状态流转
+
+当前已完成：
+
+文本输入模拟语音
+LLM 意图解析链路
+动作分类执行
+IoT 调用兜底
+跌倒事件 HTTP 接入
+高优先级停止中断
+日志落盘
+
+当前状态机包括：
+
+IDLE
+CHECKING_VISION
+WAITING_INPUT
+PARSING_INTENT
+EXECUTING_ROBOT_ACTION
+EXECUTING_IOT_ACTION
+SPEAKING
+EMERGENCY
+
+当前跌倒事件接口：
+
+POST /api/vision/fall_event
+端口：8765
+监听：0.0.0.0
+2. 配置与日志模块 core/utils.py
+
+已完成：
+
+ConfigLoader
+读取 configs/system_config.yaml
+日志初始化
+控制台彩色输出
+logs/system.log 文件落盘
+
+用途：
+
+所有模块统一读取配置
+所有运行状态可追踪
+后续视频展示可以展示日志窗口
+3. 动作执行模块 core/action_executor.py
+
+当前职责：
+
+统一管理机器人动作
+队列化执行动作
+避免并发控制机器人
+支持中断
+支持 mock/real 切换
+支持不同动作类型
+
+动作类型：
+
+arm_sdk    # 手臂/高层动作
+loco_sdk   # 底盘/导航动作，目前 real 仅占位
+cpp        # 外部 C++ 可执行文件动作，预留
+
+已完成能力：
+
+后台 worker 线程串行动作
+interrupt_current_action() 清空队列并设置中断
+shutdown() 安全退出
+ACTION_MAP 白名单动作映射
+执行动作前先释放手臂 release_arm=99
+Mock 模式可演示
+Real 模式初始化失败不崩溃
+
+已有动作示例：
+
+blow_kiss = 11
+clap = 17
+hands_up = 15
+high_five = 18
+reject = 22
+wave_face = 25
+wave_hand = 26
+shake_hand = 27
+release_arm = 99
+
+当前缺口：
+
+real 模式底盘/导航还没真正接入
+动作完成状态目前不是真反馈，更多依赖 sleep / 日志
+SDK 动作 ID 后续仍需真机逐个验证
+4. 机器人硬件抽象层
+hardware/mock_g1.py
+
+作用：
+
+无真机时模拟机器人动作
+便于 PC 端调试主控流程
+比赛前可以用于离线联调
+
+已完成：
+
+虚拟机器人上线提示
+模拟执行动作
+模拟底盘行为
+hardware/real_g1.py
+
+作用：
+
+封装宇树 Unitree SDK2 Python
+真实控制 G1 高层动作
+
+已完成：
+
+单例硬件接口
+一次性初始化
+DDS / SDK2 初始化失败自动降级
+无机器人时不崩溃
+真机动作接口预留
+
+依赖：
+
+hardware/unitree_sdk2_python/
+configs/system_config.yaml 中 robot.ip / robot.network_interface
+
+当前风险：
+
+Unitree SDK2 和 ROS2 / DDS 环境可能有冲突
+需要严格区分 ROS2 环境和 Unitree SDK 环境
+真实 G1 上动作是否执行，需要实机验证
+5. LLM 意图解析模块 modules/llm_agent/qwen_client.py
+
+当前职责：
+
+调用通义千问 / DashScope OpenAI 兼容接口
+把自然语言转成严格 JSON
+输出 action、target、reply
+本地 shortcut 降低网络依赖
+拦截幻觉动作
+
+输出格式类似：
+
+{
+  "action": "wave_hand",
+  "target": "",
+  "reply": "好的，我来挥挥手。"
+}
+
+已完成：
+
+Qwen API 调用
+正则抽取 JSON
+json.loads
+类型校验
+白名单动作校验
+无 key / 网络失败时兜底
+常用命令 shortcut
+
+shortcut 例子：
+
+开灯
+关灯
+挥手
+鼓掌
+再见
+测试跌倒
+
+当前缺口：
+
+还没有系统性接入人物画像
+还没有完整 context/memory prompt
+多意图任务拆解仍弱
+起夜/用药/报警等场景意图需要进一步统一映射到 IoT scene
+6. IoT 主控客户端 modules/iot/iot_controller.py
+
+当前职责：
+
+主控程序调用 IoT 子服务的 HTTP client
+屏蔽 FastAPI 细节
+主控只需要调用 scene/device/status
+
+已完成：
+
+health check
+scene 调用
+device_on/off
+status 查询
+IoT 服务不可用时不拖垮主控
+
+依赖：
+
+iot_service/app.py
+7. IoT 子服务 iot_service/
+
+这是当前家电联动模块的重点。
+
+技术路线：
+
+FastAPI 服务
+    ↓
+HAClient / MockHAClient
+    ↓
+Home Assistant
+    ↓
+智能设备
+
+当前文件：
+
+iot_service/
+├── app.py
+├── ha_client.py
+├── config.py
+├── config.yaml
+├── devices.yaml
+├── test_integration.py
+├── requirements.txt
+└── README.md
+iot_service/app.py
+
+职责：
+
+FastAPI 服务入口
+提供 REST API
+提供单设备控制
+提供场景控制
+提供 Mock API
+提供 OpenAPI 文档
+
+已有接口类型：
+
+/iot/device/on
+/iot/device/off
+/iot/device/set
+/iot/light/on
+/iot/light/off
+/iot/socket/on
+/iot/socket/off
+/iot/status
+/iot/devices
+/iot/scene/night_mode
+/iot/scene/fall_alert
+/iot/scene/medicine_mode
+/iot/scene/{custom_name}
+iot_service/ha_client.py
+
+职责：
+
+调用 Home Assistant REST API
+控制设备
+读取状态
+MockHAClient 支持无 HA 联调
+
+已完成：
+
+真实 HA client
+Mock HA client
+控制后状态回读
+错误处理
+iot_service/config.yaml
+
+包含：
+
+HA 地址
+HA token
+服务端口
+mock 开关
+日志级别
+自定义场景
+iot_service/devices.yaml
+
+逻辑设备名映射到 HA entity_id。
+
+示例逻辑设备：
+
+living_room_light
+bedroom_light
+path_strip
+medicine_light
+alarm_socket
+night_light_socket
+
+对应 HA 实体可能是：
+
+light.living_room_main
+light.bedroom_main
+light.path_strip
+light.medicine_box_light
+switch.alarm_socket
+switch.night_light_socket
+iot_service/test_integration.py
+
+作用：
+
+自动拉起 Docker Home Assistant
+完成 onboarding
+跑完整接口测试
+验证状态闭环
+
+当前 IoT 子系统完成度较高，是比赛展示里的重要加分点。
+
+当前缺口：
+
+需要接入真实灯/灯带/插座
+需要把设备 entity_id 改成实际 HA 里的名字
+需要让队友或本人完成真实硬件联调
+主控侧自然语言到 scene 的映射还需增强
+8. 视觉跌倒检测模块
+
+当前状态：
+
+不是完整 YOLO 推理模块，而是已经做好“事件接入层”
+
+当前完成：
+
+主控启动 HTTP server
+监听：
+POST /api/vision/fall_event
+端口 8765
+收到事件后置位
+主循环优先检查
+消费后清零
+进入 EMERGENCY
+中断当前动作
+调用 IoT fall_alert
+
+当前缺口：
+
+真正 YOLO 检测尚未接入主控
+G1 Orin NX 上 YOLOv8 CPU 可跑，但帧率可能低
+GPU 加速暂不作为当前硬目标
+队友视觉模块只需最终能向 PC 发 HTTP 事件即可
+
+建议视觉端最小协议：
+
+POST http://主控PC_IP:8765/api/vision/fall_event
+Content-Type: application/json
+
+请求体：
+
+{
+  "event": "fall_detected",
+  "confidence": 0.86,
+  "source": "g1_orin_yolo",
+  "timestamp": "2026-xx-xx xx:xx:xx"
+}
+9. 语音模块
+
+当前状态：
+
+requirements.txt 中已有依赖规划，但主控还没有真正接入
+
+已有依赖规划（后续可调整修改）：
+
+faster-whisper
+sounddevice
+soundfile
+pyttsx3
+
+当前实际状态：
+
+主控仍用 input() 模拟语音输入
+TTS 可能在部分硬件层或旧逻辑里有 pyttsx3 尝试，但不是完整语音闭环
+真实 ASR/TTS 模块尚未做成 modules/speech/
+
+后续目标：
+
+modules/speech/
+├── asr_client.py
+├── tts_client.py
+└── audio_recorder.py
+
+最小目标：
+
+按回车录音
+faster-whisper 转文字
+送入 main.py
+pyttsx3 或系统 TTS 播报 reply
+
+但注意：
+
+语音不是当前最高优先级。
+当前优先级应该是先打通 IoT 真实设备和主控闭环。
+
+10. 导航模块
+
+当前状态：
+
+真实 Nav2 / SLAM / 自主导航不是当前主线
+
+已有情况：
+
+用户 PC 已装 ROS2 Humble
+.vscode/settings.json 配了 ROS2 humble extraPaths
+G1 仿真和 ROS2/DDS 曾遇到环境冲突
+loco_sdk 在 mock 下可演示
+real 底盘/导航未接入
+
+比赛策略建议：
+
+导航分三级：
+
+Level 1：真 Nav2 + SLAM
+
+难度高，不作为当前主线。
+
+Level 2：脚本路径 / 伪导航
+
+推荐主打。
+
+例如：
+
+前进 3 秒
+右转 1 秒
+前进 2 秒
+到达卧室附近
+挥手提示药盒
+Level 3：固定站位 + 灯光/语音叙事
+
+最稳保命方案。
+
+比赛视频中可以通过镜头剪辑、场景设计、灯光引导弱化导航难度。
+
+九、配置文件说明
+configs/system_config.yaml
+
+用途：
+
+robot IP
+network_interface
+mode: mock / real
+LLM base_url
+LLM api_key
+model_name
+IoT 服务地址等
+
+注意：
+
+当前存在明文 key/token 风险。
+
+后续必须做：
+
+system_config.example.yaml
+真实 system_config.yaml 加入 .gitignore
+敏感 key 改环境变量
+iot_service/config.yaml
+
+用途：
+
+HA URL
+HA token
+mock true/false
+server_host
+server_port
+scenes
+
+同样需要注意 token 泄露风险。
+
+建议改为：
+
+config.example.yaml
+真实 config.yaml 不上传
+HA_TOKEN 从环境变量读取
+十、关键端口
+服务	端口	说明
+主控跌倒事件接入	8765	POST /api/vision/fall_event
+IoT 子服务	5001	FastAPI，主控调用
+Home Assistant	8123	HA Web/API
+主控 main.py	无固定 Web 端口	当前终端运行
+十一、当前已完成进度总表
+模块	状态	说明
+主控 FSM	已完成基础版	input 输入、LLM、动作、IoT、跌倒事件
+日志系统	已完成	控制台 + system.log
+配置加载	已完成	system_config.yaml
+LLM 意图解析	已完成基础版	Qwen + JSON + shortcut + 兜底
+动作执行器	已完成基础版	队列、中断、mock/real
+Mock G1	已完成	可无真机演示
+Real G1	初步完成	SDK2 初始化与降级，需真机验证
+IoT 子服务	完成度较高	FastAPI + HA + Mock + 场景
+HA 集成测试	已有	Docker HA 集成测试
+跌倒事件接入	已完成	HTTP 事件接入
+真实 YOLO	未完成	只做了事件入口
+真实语音	未完成	仍是 input
+真实导航	未完成	不作为主线
+真实智能设备联调	未完成/进行中	需要购买并接入设备
+十二、目前最大风险
+风险 1：想做太多
+
+不能同时推进：
+
+真语音
+真视觉
+真导航
+真家电
+真 G1 动作
+真大模型记忆
+
+当前应该收敛到：
+
+真实家电闭环
++
+机器人动作
++
+跌倒事件触发
++
+三个比赛场景
+风险 2：真实 G1 SDK 控制不稳定
+
+必须保留 Mock 模式。
+
+演示策略：
+
+能真机执行就真机
+真机不稳就 Mock + 视频剪辑兜底
+不要在最后阶段大改底层
+风险 3：Home Assistant 设备接入拖慢进度
+
+IoT 服务代码已有基础，重点不是继续写复杂代码，而是：
+
+买设备
+接入 HA
+确认 entity_id
+改 devices.yaml
+跑通 /iot/scene/*
+风险 4：密钥泄露
+
+当前配置存在明文 token/key 风险。
+
+必须提醒接手 AI：
+
+不要让用户把真实 token 发到公网
+不要把 key 提交到 GitHub
+生成 .example 文件
+真实配置加入 .gitignore
+风险 5：语音模块容易拖垮节奏
+
+语音可以后置。
+
+如果时间不够，比赛视频可以：
+
+用终端文本输入模拟语音
+后期配音
+或用最简单的按键录音方案
+
+不应让语音模块阻塞 IoT/机器人/场景闭环。
+
+十三、队友分工
+用户本人
+
+负责：
+
+主控 main.py
+G1 动作控制
+LLM 意图解析
+系统状态机
+模块集成
+比赛总方案
+视频最终展示
+Real G1 调试
+IoT 队友
+
+负责：
+
+Home Assistant 使用和设备接入
+灯、灯带、插座采购建议和测试
+iot_service 真实设备联调
+devices.yaml 维护
+三个 IoT 场景跑通：
+night_mode
+fall_alert
+medicine_mode
+给主控提供稳定接口
+
+注意：
+
+最终 Home Assistant 和 IoT 服务应该跑在用户 Ubuntu 主控 PC 上。
+
+队友可以用 Mac/Windows 开发，但代码必须可移植：
+
+不能写死 IP
+不能写死 token
+不能写死路径
+不能写死设备 entity_id
+视觉/深度学习队友
+
+负责：
+
+G1 Orin NX 摄像头读取
+YOLOv8 跌倒检测
+连续帧确认
+检测到跌倒后 HTTP POST 到主控 PC
+后续可提供检测画面用于视频分屏
+
+视觉队友不需要改主控代码，只要遵守 HTTP 事件协议。
+
+十四、当前最优开发优先级
+
+接手 AI 必须按这个顺序指导，不要乱跳。
+
+第一优先级：真实 IoT 闭环
+
+目标：
+
+Home Assistant
+→ 接入灯/灯带/插座
+→ iot_service 控制成功
+→ 主控 main.py 调用成功
+
+验收命令：
+
+POST /iot/scene/night_mode
+POST /iot/scene/fall_alert
+POST /iot/scene/medicine_mode
+
+主控验收：
+
+输入：打开客厅灯
+输入：测试跌倒
+输入：帮我找药
+
+能触发对应家电行为。
+
+第二优先级：G1 真机动作验证
+
+目标：
+
+mode=real
+挥手
+鼓掌
+飞吻
+释放手臂
+
+先只验证 3 个动作：
+
+wave_hand
+clap
+blow_kiss
+
+不要一开始验证几十个动作。
+
+第三优先级：视觉 HTTP 接入
+
+目标：
+
+先不管 YOLO 准不准，只要求视觉端能发：
+
+POST /api/vision/fall_event
+
+主控能进入 EMERGENCY 并触发 fall_alert。
+
+第四优先级：语音输入输出
+
+目标：
+
+最小可用：
+
+按键录音
+→ faster-whisper 转文字
+→ main.py
+→ pyttsx3 播报
+
+如果时间不够，语音可以弱化，不能影响主线。
+
+第五优先级：导航/移动叙事
+
+目标：
+
+不要硬刚 Nav2。
+
+优先做：
+
+固定路径脚本
+或
+固定站位 + 灯光提示 + 机器人动作
+十五、推荐启动顺序
+1. 启动 Home Assistant
+    唐yx电脑启动
+
+2. 启动 IoT 子服务
+
+进入：
+
+cd g1_smarthome_ws/iot_service
+
+
+启动：
+
+uvicorn app:app --host 0.0.0.0 --port 5001
+
+查看文档：
+
+http://localhost:5001/docs
+3. 启动主控
+
+进入仓库根目录：
+
+cd g1_smarthome_ws
+
+启动：
+
+python main.py
+
+4. 测试跌倒事件
+
+另开终端：
+
+curl -X POST http://localhost:8765/api/vision/fall_event \
+  -H "Content-Type: application/json" \
+  -d '{"event":"fall_detected","confidence":0.9,"source":"manual_test"}'
+
+预期：
+
+主控进入 EMERGENCY
+中断当前动作
+调用 IoT fall_alert
+播报报警提示
+十六、后续建议改造点
+1. 密钥安全改造
+
+必须做：
+
+system_config.example.yaml
+iot_service/config.example.yaml
+.gitignore 忽略真实配置
+环境变量读取 API Key / HA Token
+2. 场景映射配置化
+
+目前主控有关键词硬编码。
+
+建议后续改为：
+
+intent_scene_map:
+  night_mode:
+    keywords: ["起夜", "卫生间", "晚上"]
+    scene: "night_mode"
+
+  medicine_mode:
+    keywords: ["药", "吃药", "拿药"]
+    scene: "medicine_mode"
+
+  fall_alert:
+    keywords: ["跌倒", "摔倒", "报警"]
+    scene: "fall_alert"
+3. 增加比赛视频日志 UI
+
+视频建议分屏：
+
+左侧：机器人和家电实拍
+右上：YOLO 检测画面
+右下：主控日志窗口
+
+日志中展示：
+
+[FSM] WAITING_INPUT -> PARSING_INTENT
+[LLM] action=medicine_mode
+[IoT] POST /iot/scene/medicine_mode
+[HA] light.medicine_box_light state=on
+[Robot] wave_hand action_id=26
+十七、给接手 AI 的工作要求
+
+接手 AI 应该遵守以下原则：
+
+不要推翻现有架构。
+不要建议重写整个项目。
+不要优先做复杂导航。
+不要引入大量新框架。
+优先保证比赛演示闭环。
+每次只指导一个小目标。
+所有代码修改都要适合 Cursor 生成。
+给用户的提示词要详细、可复制。
+遇到复杂模块时，优先给降级方案。
+项目目标是比赛获奖，不是工程洁癖。
+十八、当前下一步最应该做什么
+
+如果接手 AI 继续往下推进，建议第一步就是：
+
+任务 A：真实家电闭环联调
+
+目标：
+
+在用户 Ubuntu PC 上跑 Home Assistant
+接入至少 1 个灯或虚拟实体
+启动 iot_service
+确认 /iot/status 正常
+确认 /iot/scene/night_mode 正常
+确认 main.py 能调用 IoTController
+
+如果真实设备还没买，可以先用 HA 的 input_boolean 做虚拟设备测试。
+
+然后再推进：
+
+任务 B：给 IoT 队友整理采购与部署说明
+
+最低采购：
+
+2.4GHz WiFi 智能插座 × 2
+RGB WiFi 灯带 × 1
+智能灯泡 × 1
+普通小台灯/夜灯 × 1
+小报警器/蜂鸣器 × 1
+普通路由器 × 1
+
+要求：
+
+支持 2.4GHz WiFi
+优先支持 Home Assistant 或 Tuya/Smart Life/Tapo
+不要 Zigbee
+不要 NAS
+不要复杂网关
+十九、项目一句话总结
+
+这是一个：
+
+以宇树 G1 EDU 为具身交互终端，以 Home Assistant 为家电控制中枢，以 Qwen 大模型为意图解析核心，以 YOLO 跌倒检测为安全事件源，面向居家养老场景的适老化智能家电联动系统。
+
+当前已经具备：
+
+主控框架
+LLM 意图解析
+机器人动作抽象
+Mock/Real 切换
+IoT FastAPI 子服务
+HA 封装
+跌倒事件接入
+紧急抢占机制
+
+当前最缺的是：
+
+真实智能设备接入
+真实 G1 动作验证
+真实视觉检测接入
+真实语音闭环
+比赛视频包装
+
+最优路线是：
+
+先打通家电闭环
+再验证 G1 动作
+再接视觉事件
+最后补语音和视频包装

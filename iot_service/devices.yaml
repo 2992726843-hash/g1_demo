@@ -1,0 +1,14 @@
+# 设备逻辑名 -> Home Assistant entity_id 映射
+# 主控程序使用左边的逻辑名，不必关心 HA 的实体命名
+
+# 主灯
+living_room_light: "input_boolean.living_room_light"
+bedroom_light: "light.bedroom_main"
+
+# 灯带
+path_strip: "light.path_strip"
+medicine_light: "light.medicine_box_light"
+
+# 智能插座
+alarm_socket: "switch.alarm_socket"
+night_light_socket: "switch.night_light_socket"

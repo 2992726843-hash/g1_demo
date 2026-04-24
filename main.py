@@ -8,6 +8,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from core.utils import ConfigLoader, setup_logger
 from core.action_executor import ActionExecutor
 from modules.llm_agent.qwen_client import QwenAgent
+from modules.iot.iot_controller import IoTController as HttpIoTController
 
 # ===== HTTP 视觉事件共享状态（队友跌倒检测 POST 接入） =====
 vision_event_state = {"fall_flag": False}
@@ -95,11 +96,89 @@ class VisionDetector:
 class IoTController:
     def __init__(self, logger):
         self.logger = logger
+        self._client = HttpIoTController(base_url="http://127.0.0.1:5001", timeout=3)
+
+    def _available(self) -> bool:
+        try:
+            return bool(self._client.health_check())
+        except Exception:  # noqa: BLE001
+            return False
+
+    def call_scene(self, scene: str) -> bool:
+        try:
+            if not self._available():
+                print("[IoTController] IoT服务不可用，已跳过家电控制")
+                return False
+            return bool(self._client.call_scene(scene))
+        except Exception as exc:  # noqa: BLE001
+            self.logger.warning("[IoTController] 场景调用失败: scene=%s err=%s", scene, exc)
+            print("[IoTController] IoT服务不可用，已跳过家电控制")
+            return False
+
+    def device_on(self, device_id: str) -> bool:
+        try:
+            if not self._available():
+                print("[IoTController] IoT服务不可用，已跳过家电控制")
+                return False
+            return bool(self._client.device_on(device_id))
+        except Exception as exc:  # noqa: BLE001
+            self.logger.warning("[IoTController] 设备调用失败: device_on device_id=%s err=%s", device_id, exc)
+            print("[IoTController] IoT服务不可用，已跳过家电控制")
+            return False
+
+    def device_off(self, device_id: str) -> bool:
+        try:
+            if not self._available():
+                print("[IoTController] IoT服务不可用，已跳过家电控制")
+                return False
+            return bool(self._client.device_off(device_id))
+        except Exception as exc:  # noqa: BLE001
+            self.logger.warning("[IoTController] 设备调用失败: device_off device_id=%s err=%s", device_id, exc)
+            print("[IoTController] IoT服务不可用，已跳过家电控制")
+            return False
 
     def execute_device_action(self, device_id: str, action: str) -> bool:
-        self.logger.info(f"[IoTController] 控制设备 {device_id} 动作: {action}")
-        print(f"[IoT] 正在控制设备 {device_id} 执行动作：{action}")
-        return True
+        """
+        IoT 调用适配层（最小侵入式接入）：
+        - 保持原 SystemCore 调用方式不变：execute_device_action(device_id, action)
+        - 内部通过 HTTP 调用独立 iot_service
+        - 服务不可用时仅打印提示，不影响主流程
+        """
+        try:
+            act = str(action or "").strip()
+            tgt = str(device_id or "").strip()
+
+            # 统一兼容：服务没起来就直接跳过，不让主链路崩溃
+            if not self._available():
+                print("[IoTController] IoT服务不可用，已跳过家电控制")
+                return False
+
+            # ===== 场景映射（优先级高于设备开关）=====
+            text = f"{act} {tgt}"
+            if act == "night_mode" or ("起夜" in text) or ("夜间模式" in text):
+                return self._client.call_scene("night_mode")
+            if act == "fall_alert" or ("跌倒报警" in text) or ("摔倒报警" in text):
+                return self._client.call_scene("fall_alert")
+            if act == "medicine_mode" or ("用药提醒" in text) or ("吃药提醒" in text):
+                return self._client.call_scene("medicine_mode")
+
+            # ===== 设备开关映射 =====
+            if act in ("light_on",) or ("开灯" in text):
+                return self._client.device_on("living_room_light")
+            if act in ("light_off",) or ("关灯" in text):
+                return self._client.device_off("living_room_light")
+            if act in ("alarm_on",) or ("打开报警器" in text):
+                return self._client.device_on("alarm_socket")
+            if act in ("alarm_off",) or ("关闭报警器" in text):
+                return self._client.device_off("alarm_socket")
+
+            # 没命中映射则保持稳定：不报错不崩溃
+            self.logger.info("[IoTController] 未命中映射，已跳过: action=%s target=%s", act, tgt)
+            return False
+        except Exception as exc:  # noqa: BLE001
+            self.logger.warning("[IoTController] 调用失败: action=%s target=%s err=%s", action, device_id, exc)
+            print("[IoTController] IoT服务不可用，已跳过家电控制")
+            return False
 
 
 # ======= SystemCore 主控 =======
@@ -135,6 +214,41 @@ class SystemCore:
             "视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event"
         )
 
+    def _handle_high_priority_interrupt(self, user_input: str) -> bool:
+        """
+        比赛演示版“高优先级文本中断”（最高优先级）：
+        - 关键词命中则立刻中断动作队列
+        - 不走 LLM
+        - 不走普通动作分类
+        """
+        try:
+            text = (user_input or "").strip()
+            if not text:
+                return False
+
+            keywords = ["停止", "停下", "取消", "别说了", "闭嘴", "安静"]
+            if not any(k in text for k in keywords):
+                return False
+
+            # 1) 中断当前动作队列
+            try:
+                self.executor.interrupt_current_action()
+            except Exception:  # noqa: BLE001
+                pass
+
+            # 2) 状态切换（不新增复杂状态，复用 EMERGENCY）
+            try:
+                self._set_state(self.EMERGENCY)
+            except Exception:  # noqa: BLE001
+                pass
+
+            # 3) 本地固定回复（不走 LLM）
+            print("已停止当前任务。")
+            self.logger.info("[SystemCore] 高优先级中断触发：已中断当前动作。")
+            return True
+        except Exception:  # noqa: BLE001
+            return False
+
     def run_loop(self):
         while True:
             # Step A: 跌倒检测（永远最高优先级）
@@ -162,6 +276,11 @@ class SystemCore:
             if user_input.lower() in ("q", "quit"):
                 self.logger.info("用户请求退出。")
                 break
+
+            # Step B.1: 高优先级语音中断（比赛优先、可中断、可抢占）
+            # 关键词命中则直接停止播报+中断动作，不进入 LLM/动作分类。
+            if self._handle_high_priority_interrupt(user_input):
+                continue
 
             # 演示更直观：当轮输入包含“测试跌倒”则立即触发紧急流程（不用等下一轮）
             if self.vision.check_fall_status(user_input):
@@ -199,9 +318,73 @@ class SystemCore:
             elif category == "iot_action":
                 # IoT 动作：只下发给 IoTController
                 self._set_state(self.EXECUTING_IOT_ACTION)
-                device_id = self._resolve_iot_device_id(action, target)
-                self.logger.info(f"[SystemCore] IoT 动作下发: device_id={device_id} action={action}")
-                self.iot.execute_device_action(device_id, action)
+                # 先严格区分“场景控制”和“单设备控制”：
+                # - 命中场景关键词则必须走 /iot/scene/{scene_name}
+                # - 否则才允许走 device_on/device_off
+                try:
+                    intent_text = " ".join(
+                        [
+                            str(user_input or ""),
+                            str(action or ""),
+                            str(target or ""),
+                            str(reply or ""),
+                            json.dumps(intent, ensure_ascii=False),
+                        ]
+                    )
+                except Exception:  # noqa: BLE001
+                    intent_text = f"{user_input} {action} {target} {reply}"
+
+                def _contains_any(text: str, keywords: list[str]) -> bool:
+                    return any(k in text for k in keywords)
+
+                night_keywords = ["night_mode", "夜间模式", "起夜模式", "夜间起夜", "起夜", "晚上模式"]
+                fall_keywords = ["fall_alert", "跌倒报警", "摔倒报警", "跌倒", "摔倒"]
+                medicine_keywords = ["medicine_mode", "用药提醒", "吃药提醒", "药盒提醒", "服药提醒"]
+
+                if _contains_any(intent_text, night_keywords):
+                    self.logger.info("[SystemCore] IoT 场景下发: scene=night_mode")
+                    self.iot.call_scene("night_mode")
+                elif _contains_any(intent_text, fall_keywords):
+                    self.logger.info("[SystemCore] IoT 场景下发: scene=fall_alert")
+                    self.iot.call_scene("fall_alert")
+                elif _contains_any(intent_text, medicine_keywords):
+                    self.logger.info("[SystemCore] IoT 场景下发: scene=medicine_mode")
+                    self.iot.call_scene("medicine_mode")
+                else:
+                    # 单设备控制：只在明确开关设备时才调用
+                    device_id = self._resolve_iot_device_id(action, target)
+                    if action in ("light_on", "light_off"):
+                        real_device = "living_room_light"
+                        op = "device_on" if action == "light_on" else "device_off"
+                        self.logger.info(
+                            "[SystemCore] IoT 设备动作下发: device_id=%s action=%s",
+                            real_device,
+                            op,
+                        )
+                        if action == "light_on":
+                            self.iot.device_on(real_device)
+                        else:
+                            self.iot.device_off(real_device)
+                    elif action in ("alarm_on", "alarm_off"):
+                        real_device = "alarm_socket"
+                        op = "device_on" if action == "alarm_on" else "device_off"
+                        self.logger.info(
+                            "[SystemCore] IoT 设备动作下发: device_id=%s action=%s",
+                            real_device,
+                            op,
+                        )
+                        if action == "alarm_on":
+                            self.iot.device_on(real_device)
+                        else:
+                            self.iot.device_off(real_device)
+                    else:
+                        # 兜底：保持原接口不破坏（但不主动误把场景当灯开关）
+                        self.logger.info(
+                            "[SystemCore] IoT 设备动作下发(兜底): device_id=%s action=%s",
+                            device_id,
+                            action,
+                        )
+                        self.iot.execute_device_action(device_id, action)
             else:
                 # none / unknown：不执行任何动作，只播报
                 if category == "unknown":

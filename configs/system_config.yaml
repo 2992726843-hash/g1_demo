@@ -6,7 +6,7 @@ home_assistant:
   url: "http://127.0.0.1:8123"
   token: "your_token_here"
 
-mode: "real" # 开发用 mock，真机运行改成 real
+mode: "mock" # 开发用 mock，真机运行改成 real
 
 # 新增 LLM 配置
 llm:

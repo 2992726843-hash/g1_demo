@@ -1,0 +1,49 @@
+# Home Assistant 接入配置
+ha_url: "http://10.68.182.145:8123"
+token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJmMmQyNzBhMWY1YmM0YWUxODQ0ZTBkZGEzZGZhMGQzZCIsImlhdCI6MTc3NzAyNTIxNCwiZXhwIjoyMDkyMzg1MjE0fQ._7i5W7m8ZLtI5hNpUZCy9OWiqJeJPak7kGLSD3u2A1k"   # ← 替换成你从 HA 复制的 token
+
+# 本服务监听地址
+server_host: "0.0.0.0"
+server_port: 5001
+
+# HTTP 超时（秒）
+timeout: 5
+
+# 是否启用 Mock 模式（无需真实 HA 即可调试）
+# true  -> 使用内置模拟后端，并开放 /mock/* 管理接口
+# false -> 使用真实 Home Assistant
+mock: false   # ← 改成 false 才会真正调用 HA
+
+# 日志级别: DEBUG / INFO / WARNING / ERROR
+log_level: "INFO"
+
+# --------------------------------------------------------------------------- #
+# 自定义场景（可选）
+# 每个场景会自动注册为 POST /iot/scene/{name} 接口。
+# steps 字段说明：
+#   device  - devices.yaml 中的逻辑名或直接的 HA entity_id
+#   action  - on / off / toggle
+#   其余字段均作为 HA 属性透传（brightness、rgb_color、color_temp、transition 等）
+# --------------------------------------------------------------------------- #
+scenes:
+  morning_mode:
+    description: "早安模式：全亮暖白光"
+    steps:
+      - device: living_room_light
+        action: on
+        brightness: 255
+        color_temp: 3000
+        transition: 2
+      - device: bedroom_light
+        action: on
+        brightness: 200
+
+  good_night:
+    description: "晚安模式：关主灯，床头常亮小夜灯"
+    steps:
+      - device: living_room_light
+        action: off
+      - device: bedroom_light
+        action: off
+      - device: night_light_socket
+        action: on
