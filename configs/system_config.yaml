@@ -1,6 +1,7 @@
 robot:
-  ip: "10.68.182.180"       # 你电脑真实IP 无限连接机器人是：“ip: "机器人当前无线IP"”
+  ip: "10.68.182.180"       # 你电脑真实IP ；无限连接机器人是：“ip: "机器人当前无线IP"”
   network_interface: "enp108s0" # 无线时："wlo1"；有线时“enp108s0”
+  # 注：网络接口名称可能因设备而异，请根据实际情况修改，可以问ai进行调整，获取到网络接口名称
 
 home_assistant:
   url: "http://127.0.0.1:8123"
@@ -12,5 +13,5 @@ mode: "mock" # 开发用 mock，真机运行改成 real
 llm:
   # 阿里云通义千问 API (OpenAI 兼容格式)
   base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1" 
-  api_key: "sk-107dd8da7c7649049e36c82120a6ede6" 
-  model_name: "qwen-plus"
+  api_key: "sk-107dd8da7c7649049e36c82120a6ede6"  # 阿里云通义千问API密钥（可更改为实际有效的API密钥）
+  model_name: "qwen-plus"  # 阿里云通义千问模型名称（可更改为实际有效的模型名称）

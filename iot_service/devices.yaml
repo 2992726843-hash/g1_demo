@@ -3,12 +3,19 @@
 
 # 主灯
 living_room_light: "input_boolean.living_room_light"
-bedroom_light: "light.bedroom_main"
+bedroom_light: "input_boolean.bedroom_light"
 
 # 灯带
-path_strip: "light.path_strip"
-medicine_light: "light.medicine_box_light"
+path_strip: "input_boolean.path_strip"
+medicine_light: "input_boolean.medicine_light"
 
 # 智能插座
-alarm_socket: "switch.alarm_socket"
-night_light_socket: "switch.night_light_socket"
+alarm_socket: "input_boolean.alarm_socket"
+night_light_socket: "input_boolean.night_light_socket"
+
+
+
+
+
+
+

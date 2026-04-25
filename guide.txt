@@ -1,0 +1,71 @@
+#测试指导：
+注：本项目PC主控端需有相关的python环境支持，以本机为例，g1_env(主函数所需的虚拟环境)，运行main函数时需要激活对应的主函数环境。
+
+##无实体机器人时系统调试：
+
+1.修改configs/system_config.yaml文件内容。文件内有详细注释，可根据实际修改。
+2.运行main.py
+
+##连接实体机器人时系统调试：
+
+初期阶段测试主函数功能主要通过有线网络连接
+
+
+
+
+
+
+
+
+##局部调试：
+一：iot模块和主模块协同调试：
+    1.主控电脑和HA模块电脑处于同一局域网下（连接同一个wifi，尽量不用校园网），唐yx电脑启动HA相关模块
+    2.修改iot_service/config.yaml文件内容。文件内有详细注释，可根据实际修改。检查对应的/home/liuyiwei/all_code/g1_smarthome_ws/iot_service/devices.yaml 内部的设备名称与实际HA网页的对比；
+    3.先执行“cd /home/liuyiwei/all_code/g1_smarthome_ws/iot_service”，
+      再执行“source .venv/bin/activate”
+           “uvicorn app:app --host 0.0.0.0 --port 5001” #开启iot服务
+    查询设备状态：
+    注：以下的测试；指令需另开启一个新的终端（ctrl + shift + 5）
+
+    你可以先测试查询所有设备的状态：
+
+    curl http://localhost:5001/iot/status
+
+    返回的内容应该显示你创建的虚拟设备的状态，如：
+
+    {
+    "living_room_light": "off",
+    "bedroom_light": "off",
+    "path_strip": "off",
+    "medicine_light": "off",
+    "alarm_socket": "off",
+    "night_light_socket": "off"
+    }
+    步骤 ：控制设备
+
+    接下来，你可以测试控制这些设备（如打开客厅灯）：
+
+    curl -X POST http://localhost:5001/iot/device/on \
+    -H "Content-Type: application/json" \
+    -d '{"name": "living_room_light"}'
+
+    然后，再次检查设备状态：
+
+    curl http://localhost:5001/iot/status
+
+    你应该看到 living_room_light 的状态变为 on：
+
+    {
+    "living_room_light": "on",
+    "bedroom_light": "off",
+    "path_strip": "off",
+    "medicine_light": "off",
+    "alarm_socket": "off",
+    "night_light_socket": "off"
+    }
+二、摔跤监测模块和主控模块协同测试：
+    1.主控电脑和部署监测模块的电脑（连接同一个wifi，尽量不用校园网）（摔跤检测模块应根据局域网修改实际的参数）
+    2.主控电脑运行主函数main.py(python3 main.py),部署摔跤检测模块开启摔跤检测函数；
+    3.给予摔跤信息，检测模块检测到摔跤信息，若正常打通，则主函数会有对应提示
+
+
