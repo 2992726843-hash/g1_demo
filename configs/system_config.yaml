@@ -15,3 +15,38 @@ llm:
   base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1" 
   api_key: "sk-107dd8da7c7649049e36c82120a6ede6"  # 阿里云通义千问API密钥（可更改为实际有效的API密钥）
   model_name: "qwen-plus"  # 阿里云通义千问模型名称（可更改为实际有效的模型名称）
+
+# -----------------------------
+# 语音模块（PC 端基础版）
+# -----------------------------
+speech:
+  enabled: true
+
+  # text / voice / hybrid
+  input_mode: "hybrid"
+
+  # fixed 表示按回车后录固定秒数
+  record_mode: "fixed"
+  record_seconds: 4
+  sample_rate: 16000
+  channels: 1
+  language: "zh"
+
+  # 如果为 null，使用系统默认麦克风
+  input_device: null
+
+  asr:
+    backend: "faster_whisper"
+    model_size: "small"
+    device: "auto"
+    compute_type: "auto"
+
+  tts:
+    enabled: true
+    backend: "pyttsx3"
+    rate: 150
+    volume: 1.0
+
+  fallback:
+    text_input_on_asr_fail: true
+    print_reply_if_tts_fail: true

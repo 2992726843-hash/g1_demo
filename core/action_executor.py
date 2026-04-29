@@ -52,19 +52,33 @@ class ActionExecutor:
         "move": _ActionSpec(type="loco_sdk"),
         "stop": _ActionSpec(type="loco_sdk"),
 
-        # 🤖 真实交互动作（官方 SDK2 Arm Action）
-        "wave_hand": _ActionSpec(type="arm_sdk", id=26),
-        "wave_face": _ActionSpec(type="arm_sdk", id=25),
-        "shake_hand": _ActionSpec(type="arm_sdk", id=27),
-        "high_five": _ActionSpec(type="arm_sdk", id=18),
-        "blow_kiss": _ActionSpec(type="arm_sdk", id=11),
-        "hug": _ActionSpec(type="arm_sdk", id=19),
-        "clap": _ActionSpec(type="arm_sdk", id=17),
-        "hands_up": _ActionSpec(type="arm_sdk", id=15),
-        "reject": _ActionSpec(type="arm_sdk", id=22),
+        # 🤖 手臂动作（Unitree SDK2 Arm Action / G1ArmActionClient）
+        #
+        # 重要（禁止混用）：
+        # - arm_sdk 的 id 必须使用 `unitree_sdk2py/g1/arm/g1_arm_action_client.py` 的 action_map（ExecuteAction 的真实 ID）
+        # - `hardware/unitree_sdk2_python/example/*` 里的 option_list id 只是示例菜单编号，不是 ExecuteAction ID
+        # - 特别注意：不要把 g1_loco_client_example.py 的菜单编号（如 9/10/11）塞进 arm_sdk
         "release_arm": _ActionSpec(type="arm_sdk", id=99),
 
-        # 🎯 LLM 语义映射（冗余防御）
+        "two_hand_kiss": _ActionSpec(type="arm_sdk", id=11),
+        "left_kiss": _ActionSpec(type="arm_sdk", id=12),
+        "right_kiss": _ActionSpec(type="arm_sdk", id=13),
+
+        "hands_up": _ActionSpec(type="arm_sdk", id=15),
+        "clap": _ActionSpec(type="arm_sdk", id=17),
+        "high_five": _ActionSpec(type="arm_sdk", id=18),
+        "hug": _ActionSpec(type="arm_sdk", id=19),
+        "heart": _ActionSpec(type="arm_sdk", id=20),
+        "right_heart": _ActionSpec(type="arm_sdk", id=21),
+        "reject": _ActionSpec(type="arm_sdk", id=22),
+        "right_hand_up": _ActionSpec(type="arm_sdk", id=23),
+        "x_ray": _ActionSpec(type="arm_sdk", id=24),
+        "wave_face": _ActionSpec(type="arm_sdk", id=25),
+        "wave_hand": _ActionSpec(type="arm_sdk", id=26),
+        "shake_hand": _ActionSpec(type="arm_sdk", id=27),
+
+        # 🎯 语义别名（保持兼容历史/LLM 输出）
+        "blow_kiss": _ActionSpec(type="arm_sdk", id=11),
         "greet": _ActionSpec(type="arm_sdk", id=26),
         "say_hello": _ActionSpec(type="arm_sdk", id=26),
         "goodbye": _ActionSpec(type="arm_sdk", id=25),
@@ -268,14 +282,32 @@ class ActionExecutor:
                     self._mock_robot = MockG1Robot()
                 mock_robot = self._mock_robot
 
+                # 特殊动作：release_arm（99）只执行一次，避免连续释放两次
+                if int(action_id) == 99:
+                    try:
+                        ok = bool(mock_robot.execute_action(99))
+                        if not ok:
+                            logger.warning("MOCK release_arm 执行失败：action=%s id=99", action_name)
+                    except Exception:
+                        logger.exception("MOCK execute_action(99) 执行异常：%s", action_name)
+                    return
+
                 # Release 防护：先释放手臂占用
                 try:
-                    mock_robot.execute_action(99)
+                    ok_release = bool(mock_robot.execute_action(99))
+                    if not ok_release:
+                        logger.warning("MOCK release_arm 执行失败：action=%s", action_name)
                 except Exception:
                     logger.exception("MOCK execute_action(99) 执行异常：%s", action_name)
                 time.sleep(0.1)
                 try:
-                    mock_robot.execute_action(int(action_id))
+                    ok_act = bool(mock_robot.execute_action(int(action_id)))
+                    if not ok_act:
+                        logger.warning(
+                            "MOCK arm action 执行失败：action=%s id=%s",
+                            action_name,
+                            action_id,
+                        )
                 except Exception:
                     logger.exception("MOCK execute_action(%s) 执行异常：%s", action_id, action_name)
             else:
@@ -283,10 +315,35 @@ class ActionExecutor:
                 # 避免在 import 阶段就强依赖硬件模块：运行时导入，便于开发阶段单测/缺依赖启动。
                 from hardware.real_g1 import play_action  # type: ignore
 
+                # 特殊动作：release_arm（99）只执行一次，避免连续释放两次
+                if int(action_id) == 99:
+                    ok = False
+                    try:
+                        ok = bool(play_action(99))  # type: ignore[call-arg]
+                    except Exception:
+                        logger.exception("REAL play_action(99) 异常：%s", action_name)
+                    if not ok:
+                        logger.warning("REAL release_arm 发送失败：action=%s id=99", action_name)
+                    return
+
                 # Release 防护：先释放手臂占用
-                play_action(99)  # type: ignore[call-arg]
+                ok_release = False
+                try:
+                    ok_release = bool(play_action(99))  # type: ignore[call-arg]
+                except Exception:
+                    logger.exception("REAL play_action(99) 异常：%s", action_name)
+                if not ok_release:
+                    logger.warning("REAL release_arm 发送失败：action=%s", action_name)
+
                 time.sleep(0.1)
-                play_action(int(action_id))  # type: ignore[call-arg]
+
+                ok_act = False
+                try:
+                    ok_act = bool(play_action(int(action_id)))  # type: ignore[call-arg]
+                except Exception:
+                    logger.exception("REAL play_action(%s) 异常：%s", action_id, action_name)
+                if not ok_act:
+                    logger.warning("REAL arm action 发送失败：action=%s id=%s", action_name, action_id)
 
             logger.info("arm_sdk 动作完成：%s", action_name)
         except Exception:
@@ -302,6 +359,11 @@ class ActionExecutor:
         底盘/导航/运动（loco_sdk）。
 
         比赛演示：按 system_config.yaml 的 mode 走 mock 闭环或 real 占位日志；不做真导航。
+
+        重要（避免踩坑）：
+        - `hardware/unitree_sdk2_python/example/g1/high_level/g1_loco_client_example.py` 的 option_list id
+          只是示例菜单分支编号，并不是底层任务 ID
+        - TODO: future real loco integration should call LocoClient methods directly, e.g. Move/StopMove/WaveHand/ShakeHand, not pass example menu IDs.
         """
         self._control_mode = "loco_sdk"
         try:

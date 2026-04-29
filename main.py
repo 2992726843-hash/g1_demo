@@ -111,9 +111,39 @@ class SystemCore:
         self.llm_agent = QwenAgent(logger)
         self.vision = VisionDetector(logger)
         self.iot = IoTController()
+        self.speech = None
+        self._speech_enabled = False
+        self._speech_input_mode = "text"
+        self._speech_fallback_text = True
         self.state = self.IDLE
         # 保存上一轮用户输入，供“每轮循环开始的跌倒检测”使用（演示可控）
         self._last_user_input: str = ""
+
+        # ===== Speech（可选模块：缺依赖/无设备时必须降级，不允许崩溃）=====
+        try:
+            cfg = ConfigLoader()
+            speech_cfg = cfg.get_nested("speech", default={}) or {}
+            self._speech_enabled = bool(speech_cfg.get("enabled", False))
+            self._speech_input_mode = str(speech_cfg.get("input_mode", "hybrid") or "hybrid").strip().lower()
+            fb = speech_cfg.get("fallback", {}) or {}
+            self._speech_fallback_text = bool(fb.get("text_input_on_asr_fail", True))
+            if self._speech_enabled:
+                try:
+                    from modules.speech import SpeechManager
+
+                    self.speech = SpeechManager(speech_cfg, logger=self.logger)
+                    # 如果 ASR 不可用，也保持 speech 对象存在（用于 TTS/stop_speaking），输入自动走降级
+                    if getattr(self.speech, "enabled", False):
+                        self.logger.info("[SystemCore] Speech 已启用：input_mode=%s", self._speech_input_mode)
+                    else:
+                        self._speech_enabled = False
+                except Exception as exc:  # noqa: BLE001
+                    self._speech_enabled = False
+                    self.speech = None
+                    self.logger.warning("[SystemCore] Speech 初始化失败，已降级为文本输入：err=%s", exc)
+        except Exception:  # noqa: BLE001
+            self._speech_enabled = False
+            self.speech = None
 
         _vision_http_thread = threading.Thread(
             target=_run_vision_event_http_server,
@@ -125,6 +155,62 @@ class SystemCore:
         self.logger.info(
             "视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event"
         )
+
+    def _stop_speaking_safe(self) -> None:
+        """紧急流程/中断前尝试停止 TTS（失败也不影响主流程）。"""
+        try:
+            if self.speech is not None:
+                self.speech.stop_speaking()
+        except Exception:  # noqa: BLE001
+            return
+
+    def _speak_reply_safe(self, reply: str) -> None:
+        """打印后可选 TTS 播报（失败降级，不影响 FSM）。"""
+        try:
+            if not self._speech_enabled or self.speech is None:
+                return
+            # tts.enabled 由 SpeechManager 内部处理（不可用会降级为 print）
+            self.speech.speak(reply)
+        except Exception:  # noqa: BLE001
+            return
+
+    def _get_user_command(self) -> str:
+        """
+        统一输入入口：
+        - text：原 input()
+        - voice：语音 listen_once
+        - hybrid：优先语音，失败回退文本
+        """
+        # 纯文本或语音模块不可用：完全保持原逻辑
+        if (not self._speech_enabled) or (self.speech is None) or (self._speech_input_mode == "text"):
+            try:
+                return input("🎙️ 等待语音指令 (输入 'q' 退出): ").strip()
+            except EOFError:
+                return "q"
+
+        # voice / hybrid
+        if self._speech_input_mode in ("voice", "hybrid"):
+            text = ""
+            try:
+                text = str(self.speech.listen_once() or "").strip()
+            except Exception:  # noqa: BLE001
+                text = ""
+            if text:
+                print(f"🎙️ 识别结果: {text}")
+                return text
+
+            if self._speech_input_mode == "hybrid" and self._speech_fallback_text:
+                try:
+                    return input("⌨️ 语音未识别，请输入文字指令 (输入 'q' 退出): ").strip()
+                except EOFError:
+                    return "q"
+            return ""
+
+        # 未知模式：降级文本
+        try:
+            return input("🎙️ 等待语音指令 (输入 'q' 退出): ").strip()
+        except EOFError:
+            return "q"
 
     def _handle_high_priority_interrupt(self, user_input: str) -> bool:
         """
@@ -154,6 +240,9 @@ class SystemCore:
             except Exception:  # noqa: BLE001
                 pass
 
+            # 2.5) 停止播报（如果有）
+            self._stop_speaking_safe()
+
             # 3) 本地固定回复（不走 LLM）
             print("已停止当前任务。")
             self.logger.info("[SystemCore] 高优先级中断触发：已中断当前动作。")
@@ -170,6 +259,7 @@ class SystemCore:
                 # 比赛演示期的「上层中断」机制：清空后续动作并尽量停止当前任务；
                 # 用于紧急事件优先，不等同于机器人底层实时急停。
                 self.executor.interrupt_current_action()
+                self._stop_speaking_safe()
                 print("\n🗣️ G1 管家: 检测到跌倒，启动报警！\n")
                 ok = self.iot.call_scene("fall_alert")
                 if not ok:
@@ -179,10 +269,7 @@ class SystemCore:
 
             # Step B: 输入（模拟语音指令）
             self._set_state(self.WAITING_INPUT)
-            try:
-                user_input = input("🎙️ 等待语音指令 (输入 'q' 退出): ").strip()
-            except EOFError:
-                user_input = "q"
+            user_input = self._get_user_command()
             if user_input == "":
                 continue
             # 记录本轮输入，供下一轮循环开始的跌倒检测使用
@@ -202,6 +289,7 @@ class SystemCore:
                 # 比赛演示期的「上层中断」机制：清空后续动作并尽量停止当前任务；
                 # 用于紧急事件优先，不等同于机器人底层实时急停。
                 self.executor.interrupt_current_action()
+                self._stop_speaking_safe()
                 print("\n🗣️ G1 管家: 检测到跌倒，启动报警！\n")
                 ok = self.iot.call_scene("fall_alert")
                 if not ok:
@@ -295,6 +383,7 @@ class SystemCore:
             self._set_state(self.SPEAKING)
             print(f"\n🗣️ G1 管家: {reply}\n")
             self.logger.info(f"[SystemCore] 已播报: {reply}")
+            self._speak_reply_safe(reply)
 
             # Step F: 短 sleep，避免刷屏
             self._set_state(self.IDLE)

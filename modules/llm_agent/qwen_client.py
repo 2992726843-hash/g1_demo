@@ -248,44 +248,77 @@ class QwenAgent:
             return None
 
         # 只做非常简单的关键词匹配（不引入复杂 NLP）
+        def _ret(category: str, action: str, target: str, reply: str) -> Optional[Dict[str, str]]:
+            """
+            shortcut 的硬约束：
+            - action 必须在系统白名单内（ActionExecutor.ACTION_MAP + base_actions + iot_actions 合并结果）
+            - 禁止返回示例菜单名/id，禁止返回裸数字 id
+            """
+            try:
+                a = str(action or "").strip()
+                if not a:
+                    return None
+                if a != "none" and a not in self.VALID_ACTIONS:
+                    return None
+                return {
+                    "category": str(category or "chat").strip() or "chat",
+                    "action": a,
+                    "target": "" if target is None else str(target),
+                    "reply": str(reply or "").strip() or self._FALLBACK["reply"],
+                }
+            except Exception:
+                return None
+
+        # ========== emergency / 急停 ==========
+        if any(k in t for k in ("急停", "紧急停止", "立刻停止", "马上停下", "停止动作", "别动了")):
+            return _ret("emergency", "stop", "", "好的，已立即停止。")
+
+        # ========== 亲吻类（必须在通用“飞吻”之前）==========
+        if any(k in t for k in ("双手飞吻", "双手亲吻")):
+            return _ret("robot_action", "two_hand_kiss", "", "好的，送您一个双手飞吻。")
+        if any(k in t for k in ("左边飞吻", "左手飞吻", "左吻")):
+            return _ret("robot_action", "left_kiss", "", "好的，送您一个左手飞吻。")
+        if any(k in t for k in ("右边飞吻", "右手飞吻", "右吻")):
+            return _ret("robot_action", "right_kiss", "", "好的，送您一个右手飞吻。")
+
+        # ========== 右手举起（必须放在普通“举手”之前）==========
+        if any(k in t for k in ("右手举起", "举右手", "抬右手")):
+            return _ret("robot_action", "right_hand_up", "", "好的，我举起右手。")
+
+        # ========== 常用交互动作 ==========
+        if any(k in t for k in ("握手", "握个手", "和我握手")):
+            return _ret("robot_action", "shake_hand", "", "好的，和您握手。")
+        if any(k in t for k in ("击掌", "high five", "High five", "来个击掌")):
+            return _ret("robot_action", "high_five", "", "好的，来个击掌。")
+        if any(k in t for k in ("拥抱", "抱抱", "给我一个拥抱")):
+            return _ret("robot_action", "hug", "", "好的，给您一个拥抱。")
+        if any(k in t for k in ("比心", "爱心", "比个心")):
+            return _ret("robot_action", "heart", "", "好的，我来比个心。")
+        if any(k in t for k in ("举手", "双手举起", "把手举起来", "hands up")):
+            return _ret("robot_action", "hands_up", "", "好的，我把手举起来。")
+        if any(k in t for k in ("拒绝", "摆手拒绝", "不可以", "不要这样")):
+            return _ret("robot_action", "reject", "", "好的，我拒绝。")
+        if any(k in t for k in ("x光", "X光", "x-ray", "X-ray", "扫描")):
+            return _ret("robot_action", "x_ray", "", "好的，我来做个扫描动作。")
+
         if "挥手" in t:
-            return {"category": "robot_action", "action": "wave_hand", "target": "", "reply": "好的，我来挥挥手。"}
+            return _ret("robot_action", "wave_hand", "", "好的，我来挥挥手。")
         if "鼓掌" in t:
-            return {"category": "robot_action", "action": "clap", "target": "", "reply": "好的，我来鼓掌。"}
+            return _ret("robot_action", "clap", "", "好的，我来鼓掌。")
         if "飞吻" in t:
-            return {"category": "robot_action", "action": "blow_kiss", "target": "", "reply": "好的，送您一个飞吻。"}
+            return _ret("robot_action", "blow_kiss", "", "好的，送您一个飞吻。")
         if any(k in t for k in ("打招呼", "打个招呼", "你好啊", "你好", "您好", "嗨")):
-            return {"category": "robot_action", "action": "greet", "target": "", "reply": "您好，我在。"}
+            return _ret("robot_action", "greet", "", "您好，我在。")
         if any(k in t for k in ("再见", "拜拜", "告别")):
-            return {"category": "robot_action", "action": "goodbye", "target": "", "reply": "好的，再见。"}
+            return _ret("robot_action", "goodbye", "", "好的，再见。")
         if "开灯" in t:
-            return {
-                "category": "iot_action",
-                "action": "light_on",
-                "target": "light.living_room",
-                "reply": "好的，我来开灯。",
-            }
+            return _ret("iot_action", "light_on", "light.living_room", "好的，我来开灯。")
         if "关灯" in t:
-            return {
-                "category": "iot_action",
-                "action": "light_off",
-                "target": "light.living_room",
-                "reply": "好的，我来关灯。",
-            }
+            return _ret("iot_action", "light_off", "light.living_room", "好的，我来关灯。")
         if any(k in t for k in ("关空调", "空调关掉")):
-            return {
-                "category": "iot_action",
-                "action": "ac_off",
-                "target": "climate.bedroom_ac",
-                "reply": "好的，我来帮您关闭空调。",
-            }
+            return _ret("iot_action", "ac_off", "climate.bedroom_ac", "好的，我来帮您关闭空调。")
         if any(k in t for k in ("有点冷", "有点凉", "有点热", "太冷了")):
-            return {
-                "category": "iot_action",
-                "action": "ac_on",
-                "target": "climate.bedroom_ac",
-                "reply": "好的，我来帮您打开空调。",
-            }
+            return _ret("iot_action", "ac_on", "climate.bedroom_ac", "好的，我来帮您打开空调。")
 
         return None
 

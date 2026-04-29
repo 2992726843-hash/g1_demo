@@ -1234,3 +1234,89 @@
 [2026-04-29 19:25:20] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
 [2026-04-29 19:28:18] [system.main] [INFO] - 用户请求退出。
 [2026-04-29 19:28:18] [system.main] [INFO] - 系统安全关闭
+[2026-04-29 20:13:49] [system.main] [INFO] - System Initializing...
+[2026-04-29 20:13:49] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-29 20:13:49] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-29 20:13:49] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 20:13:49] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 20:14:01] [system.main] [INFO] - 收到 Ctrl+C，用户中断。
+[2026-04-29 20:14:01] [system.main] [INFO] - 系统安全关闭
+[2026-04-29 20:14:03] [system.main] [INFO] - System Initializing...
+[2026-04-29 20:14:03] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-29 20:14:03] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-29 20:14:03] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 20:14:03] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 20:14:14] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-29 20:14:16] [system.main] [INFO] - [FSM] PARSING_INTENT -> SPEAKING
+[2026-04-29 20:14:16] [system.main] [INFO] - [SystemCore] 已播报: 是呀，阳光明媚，适合在客厅晒晒太阳、活动活动身体呢！需要我陪您聊聊天，或者帮您做点什么吗？
+[2026-04-29 20:14:16] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-29 20:14:16] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 20:14:16] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 20:14:32] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-29 20:14:32] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-29 20:14:32] [system.main] [INFO] - [SystemCore] 机器人动作下发: greet -> 
+[2026-04-29 20:14:33] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-29 20:14:33] [system.main] [INFO] - [SystemCore] 已播报: 您好，我在。
+[2026-04-29 20:14:33] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-29 20:14:33] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 20:14:33] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 20:14:44] [system.main] [INFO] - 收到 Ctrl+C，用户中断。
+[2026-04-29 20:14:44] [system.main] [INFO] - 系统安全关闭
+[2026-04-29 20:14:45] [system.main] [INFO] - System Initializing...
+[2026-04-29 20:14:45] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-29 20:14:45] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-29 20:14:45] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 20:14:45] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 20:14:58] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-29 20:14:59] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-29 20:14:59] [system.main] [INFO] - [SystemCore] 移动相关动作下发: move -> two_steps_forward
+[2026-04-29 20:14:59] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-29 20:14:59] [system.main] [INFO] - [SystemCore] 已播报: 已向前移动两步。
+[2026-04-29 20:14:59] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-29 20:14:59] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 20:14:59] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 20:37:13] [system.main] [INFO] - 用户请求退出。
+[2026-04-29 20:37:13] [system.main] [INFO] - 系统安全关闭
+[2026-04-29 21:23:47] [modules.llm_agent.qwen_client] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'release_arm', 'two_hand_kiss', 'left_kiss', 'right_kiss', 'hands_up', 'clap', 'high_five', 'hug', 'heart', 'right_heart', 'reject', 'right_hand_up', 'x_ray', 'wave_face', 'wave_hand', 'shake_hand', 'blow_kiss', 'greet', 'say_hello', 'goodbye']
+[2026-04-29 21:26:38] [system.main] [INFO] - System Initializing...
+[2026-04-29 21:26:38] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'release_arm', 'two_hand_kiss', 'left_kiss', 'right_kiss', 'hands_up', 'clap', 'high_five', 'hug', 'heart', 'right_heart', 'reject', 'right_hand_up', 'x_ray', 'wave_face', 'wave_hand', 'shake_hand', 'blow_kiss', 'greet', 'say_hello', 'goodbye']
+[2026-04-29 21:26:38] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-29 21:26:38] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 21:26:38] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 21:26:51] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-29 21:26:51] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_IOT_ACTION
+[2026-04-29 21:26:51] [system.main] [INFO] - [SystemCore] IoT 执行: action=ac_on target=climate.bedroom_ac
+[2026-04-29 21:26:51] [system.main] [INFO] - [FSM] EXECUTING_IOT_ACTION -> SPEAKING
+[2026-04-29 21:26:51] [system.main] [INFO] - [SystemCore] 已播报: 好的，我来帮您打开空调。
+[2026-04-29 21:26:51] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-29 21:26:52] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 21:26:52] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 21:27:35] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-29 21:27:35] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_IOT_ACTION
+[2026-04-29 21:27:35] [system.main] [INFO] - [SystemCore] IoT 执行: action=light_on target=living_room_light
+[2026-04-29 21:27:35] [system.main] [INFO] - [FSM] EXECUTING_IOT_ACTION -> SPEAKING
+[2026-04-29 21:27:35] [system.main] [INFO] - [SystemCore] 已播报: 好的，我来开灯。
+[2026-04-29 21:27:35] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-29 21:27:35] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 21:27:35] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 21:27:43] [system.main] [INFO] - 用户请求退出。
+[2026-04-29 21:27:43] [system.main] [INFO] - 系统安全关闭
+[2026-04-29 21:43:33] [scripts.test_speech] [WARNING] - [Speech][WARN] ASR 不可用，将回退到文本输入：faster-whisper 不可用：No module named 'faster_whisper'
+[2026-04-29 21:43:33] [scripts.test_speech] [WARNING] - [Speech][WARN] TTS 初始化失败，将降级为 print：No module named 'pyttsx3'
+[2026-04-29 21:43:33] [scripts.test_speech] [INFO] - [Speech] 语音模块初始化成功
+[2026-04-29 21:44:51] [scripts.test_speech] [INFO] - [Speech] ASR 尝试加载模型：size=small device=cuda compute=float16
+[2026-04-29 21:44:55] [scripts.test_speech] [INFO] - [Speech] ASR 模型已使用 cuda+float16
+[2026-04-29 21:44:55] [scripts.test_speech] [INFO] - [Speech] TTS 初始化成功（pyttsx3）
+[2026-04-29 21:44:55] [scripts.test_speech] [INFO] - [Speech] 语音模块初始化成功
+[2026-04-29 21:45:04] [scripts.test_speech] [INFO] - [Speech] 开始录音，请说话...
+[2026-04-29 21:45:08] [scripts.test_speech] [INFO] - [Speech] 录音结束，正在识别...
+[2026-04-29 21:45:08] [scripts.test_speech] [INFO] - [Speech] 开始录音，请说话...
+[2026-04-29 21:45:12] [scripts.test_speech] [INFO] - [Speech] 录音结束，正在识别...
+[2026-04-29 21:45:12] [scripts.test_speech] [INFO] - [Speech] 开始录音，请说话...
+[2026-04-29 21:45:16] [scripts.test_speech] [INFO] - [Speech] 录音结束，正在识别...
+[2026-04-29 21:45:16] [scripts.test_speech] [INFO] - [Speech] 开始录音，请说话...
+[2026-04-29 21:45:20] [scripts.test_speech] [INFO] - [Speech] 录音结束，正在识别...
+[2026-04-29 21:45:20] [scripts.test_speech] [INFO] - [Speech] 开始录音，请说话...
+[2026-04-29 21:45:24] [scripts.test_speech] [INFO] - [Speech] 录音结束，正在识别...
+[2026-04-29 21:45:24] [scripts.test_speech] [INFO] - [Speech] 开始录音，请说话...
+[2026-04-29 21:45:28] [scripts.test_speech] [INFO] - [Speech] 录音结束，正在识别...
