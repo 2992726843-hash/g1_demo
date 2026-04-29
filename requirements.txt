@@ -6,3 +6,4 @@ soundfile>=0.12.1
 faster-whisper>=1.0.0
 pyttsx3>=2.90
 numpy>=1.21
+edge-tts

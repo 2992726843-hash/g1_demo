@@ -37,6 +37,25 @@ def main() -> None:
         print("可尝试：speech.asr.model_size=tiny, device=cpu, compute_type=int8")
 
     print("=== Speech Test ===")
+    try:
+        tts_cfg = (speech_cfg.get("tts", {}) or {}) if isinstance(speech_cfg, dict) else {}
+        print(
+            "[SpeechTest] TTS 配置："
+            f" enabled={tts_cfg.get('enabled', True)}"
+            f" backend={tts_cfg.get('backend', 'print')}"
+            f" voice={tts_cfg.get('voice', '')}"
+            f" rate={tts_cfg.get('rate', '')}"
+            f" volume={tts_cfg.get('volume', '')}"
+        )
+    except Exception:
+        pass
+
+    # 先做一次纯 TTS 测试，确保当前 backend 可用/可降级
+    try:
+        sm.speak("TTS 测试：如果你听到这句话，说明语音播报后端工作正常。")
+    except Exception:
+        pass
+
     print("按 Enter 开始录音，输入 q 退出。")
     while True:
         try:

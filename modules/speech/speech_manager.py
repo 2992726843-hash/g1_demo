@@ -114,13 +114,16 @@ class SpeechManager:
             tts_cfg = self.cfg.get("tts", {}) or {}
             tts_enabled = bool(tts_cfg.get("enabled", True))
             backend = str(tts_cfg.get("backend", "pyttsx3") or "pyttsx3").strip()
-            rate = int(tts_cfg.get("rate", 150))
-            volume = float(tts_cfg.get("volume", 1.0))
+            # rate / volume 允许为 int/float，也允许为 "-10%" / "+0%" 这类字符串（交给 TTSClient 解析）
+            rate = tts_cfg.get("rate", 150)
+            volume = tts_cfg.get("volume", 1.0)
+            voice = tts_cfg.get("voice", "zh-CN-XiaoxiaoNeural")
             self.tts = TTSClient(
                 enabled=tts_enabled,
                 backend=backend,
                 rate=rate,
                 volume=volume,
+                voice=voice,
                 logger=self.logger,
             )
         except Exception as exc:

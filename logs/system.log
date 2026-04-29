@@ -1320,3 +1320,87 @@
 [2026-04-29 21:45:24] [scripts.test_speech] [INFO] - [Speech] 录音结束，正在识别...
 [2026-04-29 21:45:24] [scripts.test_speech] [INFO] - [Speech] 开始录音，请说话...
 [2026-04-29 21:45:28] [scripts.test_speech] [INFO] - [Speech] 录音结束，正在识别...
+[2026-04-29 22:07:10] [scripts.test_speech] [INFO] - [Speech] ASR 尝试加载模型：size=small device=cuda compute=float16
+[2026-04-29 22:07:13] [scripts.test_speech] [INFO] - [Speech] ASR 模型已使用 cuda+float16
+[2026-04-29 22:07:13] [scripts.test_speech] [INFO] - [Speech] TTS 初始化成功（pyttsx3）
+[2026-04-29 22:07:13] [scripts.test_speech] [INFO] - [Speech] 语音模块初始化成功
+[2026-04-29 22:07:19] [scripts.test_speech] [INFO] - [Speech] 开始录音，请说话...
+[2026-04-29 22:07:23] [scripts.test_speech] [INFO] - [Speech] 录音结束，正在识别...
+[2026-04-29 22:07:23] [scripts.test_speech] [WARNING] - [Speech][WARN] ASR 识别失败：Library libcublas.so.12 is not found or cannot be loaded
+[2026-04-29 22:08:03] [scripts.test_speech] [INFO] - [Speech] 开始录音，请说话...
+[2026-04-29 22:08:07] [scripts.test_speech] [INFO] - [Speech] 录音结束，正在识别...
+[2026-04-29 22:08:07] [scripts.test_speech] [WARNING] - [Speech][WARN] ASR 识别失败：Library libcublas.so.12 is not found or cannot be loaded
+[2026-04-29 22:08:30] [scripts.test_speech] [INFO] - [Speech] 开始录音，请说话...
+[2026-04-29 22:08:34] [scripts.test_speech] [INFO] - [Speech] 录音结束，正在识别...
+[2026-04-29 22:08:35] [scripts.test_speech] [WARNING] - [Speech][WARN] ASR 识别失败：Library libcublas.so.12 is not found or cannot be loaded
+[2026-04-29 22:08:49] [scripts.test_speech] [INFO] - [Speech] ASR 尝试加载模型：size=small device=cuda compute=float16
+[2026-04-29 22:08:50] [scripts.test_speech] [INFO] - [Speech] ASR 模型已使用 cuda+float16
+[2026-04-29 22:08:50] [scripts.test_speech] [INFO] - [Speech] TTS 初始化成功（pyttsx3）
+[2026-04-29 22:08:50] [scripts.test_speech] [INFO] - [Speech] 语音模块初始化成功
+[2026-04-29 22:08:53] [scripts.test_speech] [INFO] - [Speech] 开始录音，请说话...
+[2026-04-29 22:08:57] [scripts.test_speech] [INFO] - [Speech] 录音结束，正在识别...
+[2026-04-29 22:08:57] [scripts.test_speech] [WARNING] - [Speech][WARN] ASR 识别失败：Library libcublas.so.12 is not found or cannot be loaded
+[2026-04-29 22:10:53] [scripts.test_speech] [INFO] - [Speech] ASR 加载模型：size=small device=cpu compute=int8
+[2026-04-29 22:10:54] [scripts.test_speech] [INFO] - [Speech] TTS 初始化成功（pyttsx3）
+[2026-04-29 22:10:54] [scripts.test_speech] [INFO] - [Speech] 语音模块初始化成功
+[2026-04-29 22:10:57] [scripts.test_speech] [INFO] - [Speech] 开始录音，请说话...
+[2026-04-29 22:11:01] [scripts.test_speech] [INFO] - [Speech] 录音结束，正在识别...
+[2026-04-29 22:11:02] [scripts.test_speech] [INFO] - [ASR] 识别结果: 这下应该有声音了吧 你好
+[2026-04-29 22:11:02] [scripts.test_speech] [INFO] - [Speech] 归一化后文本: 这下应该有声音了吧 你好
+[2026-04-29 22:11:42] [scripts.test_speech] [INFO] - [Speech] ASR 加载模型：size=small device=cpu compute=int8
+[2026-04-29 22:11:43] [scripts.test_speech] [INFO] - [Speech] TTS 初始化成功（pyttsx3）
+[2026-04-29 22:11:43] [scripts.test_speech] [INFO] - [Speech] 语音模块初始化成功
+[2026-04-29 22:11:47] [scripts.test_speech] [INFO] - [Speech] 开始录音，请说话...
+[2026-04-29 22:11:51] [scripts.test_speech] [INFO] - [Speech] 录音结束，正在识别...
+[2026-04-29 22:11:52] [scripts.test_speech] [INFO] - [ASR] 识别结果: 这下应该是有声音的吧 谢谢你
+[2026-04-29 22:11:52] [scripts.test_speech] [INFO] - [Speech] 归一化后文本: 这下应该是有声音的吧 谢谢你
+[2026-04-29 22:12:22] [scripts.test_speech] [INFO] - [Speech] 开始录音，请说话...
+[2026-04-29 22:12:26] [scripts.test_speech] [INFO] - [Speech] 录音结束，正在识别...
+[2026-04-29 22:12:27] [scripts.test_speech] [INFO] - [ASR] 识别结果: 打开卧室的灯
+[2026-04-29 22:12:27] [scripts.test_speech] [INFO] - [Speech] 归一化后文本: 打开卧室的灯
+[2026-04-29 22:21:42] [scripts.test_speech] [WARNING] - [Speech][WARN] ASR 不可用，将回退到文本输入：faster-whisper 不可用：No module named 'faster_whisper'
+[2026-04-29 22:21:42] [scripts.test_speech] [INFO] - [Speech] TTS 初始化成功（edge_tts，voice=zh-CN-XiaoxiaoNeural, rate=-10%, volume=+0%）
+[2026-04-29 22:21:42] [scripts.test_speech] [INFO] - [Speech] 语音模块初始化成功
+[2026-04-29 22:21:42] [scripts.test_speech] [WARNING] - [Speech][WARN] edge_tts 播报失败，将降级为 print：No module named 'edge_tts'
+[2026-04-29 22:23:40] [scripts.test_speech] [INFO] - [Speech] ASR 加载模型：size=small device=cpu compute=int8
+[2026-04-29 22:23:41] [scripts.test_speech] [INFO] - [Speech] TTS 初始化成功（edge_tts，voice=zh-CN-XiaoxiaoNeural, rate=-10%, volume=+0%）
+[2026-04-29 22:23:41] [scripts.test_speech] [INFO] - [Speech] 语音模块初始化成功
+[2026-04-29 22:23:57] [scripts.test_speech] [INFO] - [Speech] 开始录音，请说话...
+[2026-04-29 22:24:01] [scripts.test_speech] [INFO] - [Speech] 录音结束，正在识别...
+[2026-04-29 22:24:02] [scripts.test_speech] [INFO] - [ASR] 识别结果: 我的卧室灯,谢谢 打开灯,谢谢
+[2026-04-29 22:24:02] [scripts.test_speech] [INFO] - [Speech] 归一化后文本: 我的卧室灯,谢谢 打开灯,谢谢
+[2026-04-29 22:29:20] [system.main] [INFO] - System Initializing...
+[2026-04-29 22:29:20] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'release_arm', 'two_hand_kiss', 'left_kiss', 'right_kiss', 'hands_up', 'clap', 'high_five', 'hug', 'heart', 'right_heart', 'reject', 'right_hand_up', 'x_ray', 'wave_face', 'wave_hand', 'shake_hand', 'blow_kiss', 'greet', 'say_hello', 'goodbye']
+[2026-04-29 22:29:20] [system.main] [INFO] - [Speech] ASR 加载模型：size=small device=cpu compute=int8
+[2026-04-29 22:29:21] [system.main] [INFO] - [Speech] TTS 初始化成功（edge_tts，voice=zh-CN-XiaoxiaoNeural, rate=-10%, volume=+0%）
+[2026-04-29 22:29:21] [system.main] [INFO] - [Speech] 语音模块初始化成功
+[2026-04-29 22:29:21] [system.main] [INFO] - [SystemCore] Speech 已启用：input_mode=hybrid
+[2026-04-29 22:29:21] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-29 22:29:21] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 22:29:21] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 22:29:31] [system.main] [INFO] - [Speech] 开始录音，请说话...
+[2026-04-29 22:29:35] [system.main] [INFO] - [Speech] 录音结束，正在识别...
+[2026-04-29 22:29:36] [system.main] [INFO] - [ASR] 识别结果: 打开物质灯,谢谢
+[2026-04-29 22:29:36] [system.main] [INFO] - [Speech] 归一化后文本: 打开物质灯,谢谢
+[2026-04-29 22:29:36] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-29 22:29:37] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_IOT_ACTION
+[2026-04-29 22:29:37] [system.main] [INFO] - [SystemCore] IoT 执行: action=light_on target=living_room_light
+[2026-04-29 22:29:40] [system.main] [INFO] - [FSM] EXECUTING_IOT_ACTION -> SPEAKING
+[2026-04-29 22:29:40] [system.main] [INFO] - [SystemCore] 已播报: 已为您打开物质灯。
+[2026-04-29 22:29:46] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-29 22:29:47] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 22:29:47] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 22:31:07] [system.main] [INFO] - [Speech] 开始录音，请说话...
+[2026-04-29 22:31:11] [system.main] [INFO] - [Speech] 录音结束，正在识别...
+[2026-04-29 22:31:12] [system.main] [INFO] - [ASR] 识别结果: 我操 揮揮手
+[2026-04-29 22:31:12] [system.main] [INFO] - [Speech] 归一化后文本: 我操 揮揮手
+[2026-04-29 22:31:12] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-29 22:31:13] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-29 22:31:13] [system.main] [INFO] - [SystemCore] 机器人动作下发: wave_hand -> 
+[2026-04-29 22:31:15] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-29 22:31:15] [system.main] [INFO] - [SystemCore] 已播报: 您好，我在这里呢！
+[2026-04-29 22:31:19] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-29 22:31:20] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 22:31:20] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 22:31:27] [system.main] [INFO] - 收到 Ctrl+C，用户中断。
+[2026-04-29 22:31:27] [system.main] [INFO] - 系统安全关闭
