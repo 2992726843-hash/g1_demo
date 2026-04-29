@@ -1082,3 +1082,155 @@
 [2026-04-25 00:00:09] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
 [2026-04-25 00:02:50] [system.main] [INFO] - 用户请求退出。
 [2026-04-25 00:02:50] [system.main] [INFO] - 系统安全关闭
+[2026-04-25 18:29:30] [system.main] [INFO] - System Initializing...
+[2026-04-25 18:29:30] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-25 18:29:30] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-25 18:29:30] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-25 18:29:30] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-25 18:29:35] [system.main] [INFO] - 收到 Ctrl+C，用户中断。
+[2026-04-25 18:29:35] [system.main] [INFO] - 系统安全关闭
+[2026-04-25 19:29:07] [system.main] [INFO] - System Initializing...
+[2026-04-25 19:29:07] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-25 19:29:07] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-25 19:29:07] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-25 19:29:07] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-25 19:29:16] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-25 19:29:16] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_ROBOT_ACTION
+[2026-04-25 19:29:16] [system.main] [INFO] - [SystemCore] 机器人动作下发: greet -> 
+[2026-04-25 19:29:17] [system.main] [INFO] - [FSM] EXECUTING_ROBOT_ACTION -> SPEAKING
+[2026-04-25 19:29:17] [system.main] [INFO] - [SystemCore] 已播报: 您好，我在。
+[2026-04-25 19:29:17] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-25 19:29:18] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-25 19:29:18] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-25 19:35:13] [system.main] [INFO] - 用户请求退出。
+[2026-04-25 19:35:13] [system.main] [INFO] - 系统安全关闭
+[2026-04-25 19:35:16] [system.main] [INFO] - System Initializing...
+[2026-04-25 19:35:16] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-25 19:35:16] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-25 19:35:16] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-25 19:35:16] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-25 19:56:01] [system.main] [INFO] - 用户请求退出。
+[2026-04-25 19:56:01] [system.main] [INFO] - 系统安全关闭
+[2026-04-25 19:56:02] [system.main] [INFO] - System Initializing...
+[2026-04-25 19:56:02] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-25 19:56:02] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-25 19:56:02] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-25 19:56:02] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-25 19:57:00] [system.main] [INFO] - 用户请求退出。
+[2026-04-25 19:57:00] [system.main] [INFO] - 系统安全关闭
+[2026-04-25 19:59:38] [system.main] [INFO] - System Initializing...
+[2026-04-25 19:59:38] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-25 19:59:38] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-25 19:59:38] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-25 19:59:38] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-25 20:04:01] [system.main] [INFO] - 用户请求退出。
+[2026-04-25 20:04:01] [system.main] [INFO] - 系统安全关闭
+[2026-04-29 18:46:13] [system.main] [INFO] - System Initializing...
+[2026-04-29 18:46:13] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-29 18:46:13] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-29 18:46:13] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 18:46:13] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 18:46:26] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-29 18:46:26] [system.main] [ERROR] - Qwen 请求失败（已返回安全兜底）。error=401 Client Error: Unauthorized for url: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+[2026-04-29 18:46:26] [system.main] [INFO] - [LLM FALLBACK] 使用兜底回复
+[2026-04-29 18:46:26] [system.main] [INFO] - [FSM] PARSING_INTENT -> SPEAKING
+[2026-04-29 18:46:26] [system.main] [INFO] - [SystemCore] 已播报: 抱歉，我没听清，您能再说一遍吗？
+[2026-04-29 18:46:26] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-29 18:46:27] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 18:46:27] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 19:12:41] [system.main] [INFO] - 收到 Ctrl+C，用户中断。
+[2026-04-29 19:12:41] [system.main] [INFO] - 系统安全关闭
+[2026-04-29 19:12:43] [system.main] [INFO] - System Initializing...
+[2026-04-29 19:12:43] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-29 19:12:43] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-29 19:12:43] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 19:12:43] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 19:12:49] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-29 19:12:49] [system.main] [ERROR] - Qwen 请求失败（已返回安全兜底）。error=401 Client Error: Unauthorized for url: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+[2026-04-29 19:12:49] [system.main] [INFO] - [LLM FALLBACK] 使用兜底回复
+[2026-04-29 19:12:49] [system.main] [INFO] - [FSM] PARSING_INTENT -> SPEAKING
+[2026-04-29 19:12:49] [system.main] [INFO] - [SystemCore] 已播报: 抱歉，我没听清，您能再说一遍吗？
+[2026-04-29 19:12:49] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-29 19:12:50] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 19:12:50] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 19:12:55] [system.main] [INFO] - 用户请求退出。
+[2026-04-29 19:12:55] [system.main] [INFO] - 系统安全关闭
+[2026-04-29 19:13:07] [system.main] [INFO] - System Initializing...
+[2026-04-29 19:13:07] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-29 19:13:07] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-29 19:13:07] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 19:13:07] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 19:13:15] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-29 19:13:17] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_IOT_ACTION
+[2026-04-29 19:13:17] [system.main] [INFO] - [SystemCore] IoT 执行: scene=night_mode
+[2026-04-29 19:13:20] [system.main] [INFO] - [FSM] EXECUTING_IOT_ACTION -> SPEAKING
+[2026-04-29 19:13:20] [system.main] [INFO] - [SystemCore] 已播报: 已为您开启夜间模式
+[2026-04-29 19:13:20] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-29 19:13:20] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 19:13:20] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 19:15:45] [system.main] [INFO] - 用户请求退出。
+[2026-04-29 19:15:45] [system.main] [INFO] - 系统安全关闭
+[2026-04-29 19:15:46] [system.main] [INFO] - System Initializing...
+[2026-04-29 19:15:46] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-29 19:15:46] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-29 19:15:46] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 19:15:46] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 19:15:53] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-29 19:15:55] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_IOT_ACTION
+[2026-04-29 19:15:55] [system.main] [INFO] - [SystemCore] IoT 执行: scene=night_mode
+[2026-04-29 19:15:55] [system.main] [INFO] - [FSM] EXECUTING_IOT_ACTION -> SPEAKING
+[2026-04-29 19:15:55] [system.main] [INFO] - [SystemCore] 已播报: 已为您开启夜间模式
+[2026-04-29 19:15:55] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-29 19:15:55] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 19:15:55] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 19:16:32] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-29 19:16:32] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_IOT_ACTION
+[2026-04-29 19:16:32] [system.main] [INFO] - [SystemCore] IoT 执行: action=light_off target=living_room_light
+[2026-04-29 19:16:32] [system.main] [INFO] - [FSM] EXECUTING_IOT_ACTION -> SPEAKING
+[2026-04-29 19:16:32] [system.main] [INFO] - [SystemCore] 已播报: 好的，我来关灯。
+[2026-04-29 19:16:32] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-29 19:16:32] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 19:16:32] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 19:17:02] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-29 19:17:04] [system.main] [INFO] - action=none 但 category=emergency，将仅播报 reply。raw='{"category": "emergency", "action": "none", "target": "", "reply": "已检测到摔倒，请保持冷静，我正在呼叫紧急联系人并通知社区医生。"}'
+[2026-04-29 19:17:04] [system.main] [INFO] - [FSM] PARSING_INTENT -> SPEAKING
+[2026-04-29 19:17:04] [system.main] [INFO] - [SystemCore] 已播报: 已检测到摔倒，请保持冷静，我正在呼叫紧急联系人并通知社区医生。
+[2026-04-29 19:17:04] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-29 19:17:04] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 19:17:04] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 19:22:12] [system.main] [INFO] - 收到 Ctrl+C，用户中断。
+[2026-04-29 19:22:12] [system.main] [INFO] - 系统安全关闭
+[2026-04-29 19:22:15] [system.main] [INFO] - System Initializing...
+[2026-04-29 19:22:15] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-29 19:22:15] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-29 19:22:15] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 19:22:15] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 19:22:19] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-29 19:22:20] [system.main] [INFO] - action=none 但 category=emergency，将仅播报 reply。raw='{"category": "emergency", "action": "none", "target": "", "reply": "已检测到摔倒，请保持冷静，我马上联系家人并呼叫急救服务。"}'
+[2026-04-29 19:22:20] [system.main] [WARNING] - [SystemCore] emergency 兜底触发 fall_alert 场景
+[2026-04-29 19:22:20] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_IOT_ACTION
+[2026-04-29 19:22:20] [system.main] [INFO] - [SystemCore] IoT 执行: scene=fall_alert
+[2026-04-29 19:22:20] [system.main] [INFO] - [FSM] EXECUTING_IOT_ACTION -> SPEAKING
+[2026-04-29 19:22:20] [system.main] [INFO] - [SystemCore] 已播报: 已检测到摔倒，请保持冷静，我马上联系家人并呼叫急救服务。
+[2026-04-29 19:22:20] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-29 19:22:21] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 19:22:21] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 19:22:45] [system.main] [INFO] - 收到 Ctrl+C，用户中断。
+[2026-04-29 19:22:45] [system.main] [INFO] - 系统安全关闭
+[2026-04-29 19:25:05] [system.main] [INFO] - System Initializing...
+[2026-04-29 19:25:05] [system.main] [INFO] - QwenAgent 初始化完成：VALID_ACTIONS=['none', 'navigate', 'move', 'stop', 'light_on', 'light_off', 'fan_on', 'fan_off', 'ac_on', 'ac_off', 'wave_hand', 'wave_face', 'shake_hand', 'high_five', 'blow_kiss', 'hug', 'clap', 'hands_up', 'reject', 'release_arm', 'greet', 'say_hello', 'goodbye']
+[2026-04-29 19:25:05] [system.main] [INFO] - 视觉事件服务已启动: host=0.0.0.0 port=8765 POST /api/vision/fall_event
+[2026-04-29 19:25:05] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 19:25:05] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 19:25:18] [system.main] [INFO] - [FSM] WAITING_INPUT -> PARSING_INTENT
+[2026-04-29 19:25:20] [system.main] [INFO] - action=none 但 category=emergency，将仅播报 reply。raw='{"category": "emergency", "action": "none", "target": "", "reply": "已检测到摔倒，请保持冷静，我马上联系家人并呼叫急救服务。"}'
+[2026-04-29 19:25:20] [system.main] [WARNING] - [SystemCore] emergency 兜底触发 fall_alert 场景
+[2026-04-29 19:25:20] [system.main] [INFO] - [FSM] PARSING_INTENT -> EXECUTING_IOT_ACTION
+[2026-04-29 19:25:20] [system.main] [INFO] - [SystemCore] IoT 执行: scene=fall_alert
+[2026-04-29 19:25:20] [system.main] [INFO] - [FSM] EXECUTING_IOT_ACTION -> SPEAKING
+[2026-04-29 19:25:20] [system.main] [INFO] - [SystemCore] 已播报: 已检测到摔倒，请保持冷静，我马上联系家人并呼叫急救服务。
+[2026-04-29 19:25:20] [system.main] [INFO] - [FSM] SPEAKING -> IDLE
+[2026-04-29 19:25:20] [system.main] [INFO] - [FSM] IDLE -> CHECKING_VISION
+[2026-04-29 19:25:20] [system.main] [INFO] - [FSM] CHECKING_VISION -> WAITING_INPUT
+[2026-04-29 19:28:18] [system.main] [INFO] - 用户请求退出。
+[2026-04-29 19:28:18] [system.main] [INFO] - 系统安全关闭

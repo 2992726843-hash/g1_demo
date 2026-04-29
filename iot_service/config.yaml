@@ -1,5 +1,5 @@
 # Home Assistant 接入配置
-ha_url: "http://10.68.182.145:8123"
+ha_url: "http://10.68.182.145:8123" # ← 替换成真实的Home Assistant URL，具体地址可在HA中查看
 token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJmMmQyNzBhMWY1YmM0YWUxODQ0ZTBkZGEzZGZhMGQzZCIsImlhdCI6MTc3NzAyNTIxNCwiZXhwIjoyMDkyMzg1MjE0fQ._7i5W7m8ZLtI5hNpUZCy9OWiqJeJPak7kGLSD3u2A1k"   # ← 替换成你从 HA 复制的 token
 
 # 本服务监听地址
@@ -12,7 +12,7 @@ timeout: 5
 # 是否启用 Mock 模式（无需真实 HA 即可调试）
 # true  -> 使用内置模拟后端，并开放 /mock/* 管理接口
 # false -> 使用真实 Home Assistant
-mock: false   # ← 改成 false 才会真正调用 HA
+mock: true   # ← 改成 false 才会真正调用 HA
 
 # 日志级别: DEBUG / INFO / WARNING / ERROR
 log_level: "INFO"

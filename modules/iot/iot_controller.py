@@ -21,6 +21,13 @@ class IoTController:
         self.base_url = (base_url or "http://127.0.0.1:5001").rstrip("/")
         self.timeout = timeout
 
+    def _print(self, msg: str) -> None:
+        try:
+            print(f"[IoTController] {msg}")
+        except Exception:  # noqa: BLE001
+            # 打印失败不影响主流程
+            pass
+
     def _ok(self, resp: requests.Response) -> bool:
         try:
             if resp.status_code != 200:
@@ -36,6 +43,7 @@ class IoTController:
             return self._ok(resp)
         except Exception as exc:  # noqa: BLE001
             logger.info("[IoTController] health_check 失败: err=%s", exc)
+            self._print(f"health_check 失败: err={exc}")
             return False
 
     def call_scene(self, scene_name: str) -> bool:
@@ -43,11 +51,13 @@ class IoTController:
         if not scene:
             return False
         try:
+            self._print(f"调用场景: scene={scene}")
             resp = requests.post(
                 f"{self.base_url}/iot/scene/{scene}",
                 timeout=self.timeout,
             )
             if self._ok(resp):
+                self._print(f"场景成功: scene={scene}")
                 return True
             err: Any = None
             try:
@@ -55,23 +65,27 @@ class IoTController:
             except Exception:  # noqa: BLE001
                 err = resp.text[:300]
             logger.warning("[IoTController] 调用失败: scene=%s err=%s", scene, err)
+            self._print(f"调用失败: scene={scene} err={err}")
             return False
         except Exception as exc:  # noqa: BLE001
             logger.warning("[IoTController] 调用失败: scene=%s err=%s", scene, exc)
+            self._print(f"调用失败: scene={scene} err={exc}")
             return False
 
-    def device_on(self, name: str, **kwargs) -> bool:
+    def device_on(self, name: str) -> bool:
         dev = (name or "").strip()
         if not dev:
             return False
-        payload = {"name": dev, **(kwargs or {})}
+        payload = {"name": dev}
         try:
+            self._print(f"设备开: name={dev}")
             resp = requests.post(
                 f"{self.base_url}/iot/device/on",
                 json=payload,
                 timeout=self.timeout,
             )
             if self._ok(resp):
+                self._print(f"设备开成功: name={dev}")
                 return True
             err: Any = None
             try:
@@ -79,9 +93,11 @@ class IoTController:
             except Exception:  # noqa: BLE001
                 err = resp.text[:300]
             logger.warning("[IoTController] 调用失败: device_on name=%s err=%s", dev, err)
+            self._print(f"调用失败: device_on name={dev} err={err}")
             return False
         except Exception as exc:  # noqa: BLE001
             logger.warning("[IoTController] 调用失败: device_on name=%s err=%s", dev, exc)
+            self._print(f"调用失败: device_on name={dev} err={exc}")
             return False
 
     def device_off(self, name: str) -> bool:
@@ -90,12 +106,14 @@ class IoTController:
             return False
         payload = {"name": dev}
         try:
+            self._print(f"设备关: name={dev}")
             resp = requests.post(
                 f"{self.base_url}/iot/device/off",
                 json=payload,
                 timeout=self.timeout,
             )
             if self._ok(resp):
+                self._print(f"设备关成功: name={dev}")
                 return True
             err: Any = None
             try:
@@ -103,9 +121,11 @@ class IoTController:
             except Exception:  # noqa: BLE001
                 err = resp.text[:300]
             logger.warning("[IoTController] 调用失败: device_off name=%s err=%s", dev, err)
+            self._print(f"调用失败: device_off name={dev} err={err}")
             return False
         except Exception as exc:  # noqa: BLE001
             logger.warning("[IoTController] 调用失败: device_off name=%s err=%s", dev, exc)
+            self._print(f"调用失败: device_off name={dev} err={exc}")
             return False
 
     def get_status(self, name: str | None = None) -> dict:
