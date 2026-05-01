@@ -4,4 +4,8 @@
 __pycache__/
 *.pyc
 logs/
-*.log
+*.loglogs/
+
+# IoT service local config (may contain real tokens)
+iot_service/config.yaml
+configs/system_config.yaml

@@ -7,6 +7,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from core.utils import ConfigLoader, setup_logger
 from core.action_executor import ActionExecutor
+from core.task_executor import TaskExecutor
+from core.task_orchestrator import TaskOrchestrator
 from modules.llm_agent.qwen_client import QwenAgent
 from modules.iot.iot_controller import IoTController
 
@@ -144,6 +146,20 @@ class SystemCore:
         except Exception:  # noqa: BLE001
             self._speech_enabled = False
             self.speech = None
+
+        self.task_orchestrator = TaskOrchestrator()
+        self.task_executor = TaskExecutor(
+            iot_controller=self.iot,
+            action_executor=self.executor,
+            speak_callback=self._speak_reply_safe,
+            logger=self.logger,
+            set_state_callback=self._set_state,
+            states={
+                "EXECUTING_IOT_ACTION": self.EXECUTING_IOT_ACTION,
+                "EXECUTING_ROBOT_ACTION": self.EXECUTING_ROBOT_ACTION,
+                "SPEAKING": self.SPEAKING,
+            },
+        )
 
         _vision_http_thread = threading.Thread(
             target=_run_vision_event_http_server,
@@ -300,90 +316,14 @@ class SystemCore:
             # Step C: LLM（调用千问 QwenAgent）
             self._set_state(self.PARSING_INTENT)
             intent = self.llm_agent.chat(user_input, context="当前位置: 客厅")
-            action = str(intent.get("action", "none") or "none").strip()
-            target = str(intent.get("target", "") or "")
-            reply = str(intent.get("reply", "...") or "...")
-
-            # Step D: 动作分类执行（最关键：避免机器人动作和 IoT 动作混发）
-            forced_category: str | None = None
-            try:
-                emergency_keywords = ["摔倒", "跌倒", "倒地", "摔了", "老人摔倒", "有人摔倒"]
-                llm_category = str(intent.get("category", "") or "").strip().lower()
-                if (llm_category == "emergency") or any(k in (user_input or "") for k in emergency_keywords):
-                    forced_category = "iot_action"
-                    action = "fall_alert"
-                    target = "fall_alert"
-                    if not (isinstance(reply, str) and reply.strip() and reply.strip() != "..."):
-                        reply = "已检测到摔倒风险，我已开启报警和灯光提醒。"
-                    self.logger.warning("[SystemCore] emergency 兜底触发 fall_alert 场景")
-            except Exception as exc:  # noqa: BLE001
-                # 兜底逻辑自身也不能影响主流程
-                self.logger.info("[SystemCore] emergency 兜底逻辑异常已忽略: err=%s", exc)
-
-            category = forced_category or self._classify_action(action)
-            if category == "robot_action":
-                # 机器人动作：只下发给 ActionExecutor
-                self._set_state(self.EXECUTING_ROBOT_ACTION)
-                if action in ("navigate", "move", "stop"):
-                    self.logger.info("[SystemCore] 移动相关动作下发: %s -> %s", action, target)
-                    self.executor.submit_action(action, target)
-                    time.sleep(0.3)
-                else:
-                    self.logger.info(f"[SystemCore] 机器人动作下发: {action} -> {target}")
-                    self.executor.submit_action(action, target)
-                    # 比赛演示期的简化同步策略：给后台动作线程一点时间完成主要动作
-                    # 注意：这不是严格的“动作完成检测”，只是为了“播报-动作-等待下一条输入”更自然。
-                    time.sleep(1.2)
-            elif category == "iot_action":
-                # IoT 动作：只下发给 IoTController
-                self._set_state(self.EXECUTING_IOT_ACTION)
-                # === 语义兜底（进入 IoT 执行前，强制关键词覆盖）===
-                if ("夜间" in user_input) or ("起夜" in user_input):
-                    action = "night_mode"
-                if "跌倒" in user_input:
-                    action = "fall_alert"
-                if "吃药" in user_input:
-                    action = "medicine_mode"
-
-                ok = False
-                if action == "light_on":
-                    real_device = "living_room_light"
-                    self.logger.info("[SystemCore] IoT 执行: action=%s target=%s", action, real_device)
-                    ok = bool(self.iot.device_on(real_device))
-                elif action == "light_off":
-                    real_device = "living_room_light"
-                    self.logger.info("[SystemCore] IoT 执行: action=%s target=%s", action, real_device)
-                    ok = bool(self.iot.device_off(real_device))
-                elif action == "night_mode":
-                    self.logger.info("[SystemCore] IoT 执行: scene=night_mode")
-                    ok = bool(self.iot.call_scene("night_mode"))
-                    reply = "已为您开启夜间模式"
-                elif action == "fall_alert":
-                    self.logger.info("[SystemCore] IoT 执行: scene=fall_alert")
-                    ok = bool(self.iot.call_scene("fall_alert"))
-                    if not (isinstance(reply, str) and reply.strip() and reply.strip() != "..."):
-                        reply = "已为您触发跌倒报警"
-                elif action == "medicine_mode":
-                    self.logger.info("[SystemCore] IoT 执行: scene=medicine_mode")
-                    ok = bool(self.iot.call_scene("medicine_mode"))
-                    reply = "已为您开启吃药提醒"
-                else:
-                    # 不扩大 IoT 范围，避免误触发未知设备/场景
-                    self.logger.info("[SystemCore] IoT 执行: action=%s target=%s", action, target)
-                    ok = False
-
-                if not ok:
-                    print("[IoT] 调用失败，已跳过")
-            else:
-                # none / unknown：不执行任何动作，只播报
-                if category == "unknown":
-                    self.logger.warning("[SystemCore] 未知 action 已按 none 处理：%r", action)
-
-            # Step E: reply 播报逻辑独立（只打印一次）
-            self._set_state(self.SPEAKING)
-            print(f"\n🗣️ G1 管家: {reply}\n")
-            self.logger.info(f"[SystemCore] 已播报: {reply}")
-            self._speak_reply_safe(reply)
+            plan = self.task_orchestrator.build_plan(user_input, intent)
+            result = self.task_executor.execute(plan)
+            self.logger.info(
+                "[SystemCore] 任务执行完成: plan=%s ok=%s failed_steps=%s",
+                result.get("plan"),
+                result.get("ok"),
+                result.get("failed_steps"),
+            )
 
             # Step F: 短 sleep，避免刷屏
             self._set_state(self.IDLE)

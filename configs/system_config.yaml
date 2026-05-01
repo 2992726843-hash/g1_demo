@@ -131,7 +131,7 @@ llm:
   #
   # 然后代码中读取：
   #   os.getenv("DASHSCOPE_API_KEY")
-  api_key: "sk-107dd8da7c7649049e36c82120a6ede6"
+  api_key: "sk-ca0b9154ca084c2593bd4f5d2bc1cc41"
 
   # 使用的模型名称。
   #

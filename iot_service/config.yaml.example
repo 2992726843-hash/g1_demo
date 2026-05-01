@@ -1,6 +1,6 @@
 # Home Assistant 接入配置
 ha_url: "http://localhost:8123"
-token: "YOUR_LONG_LIVED_TOKEN"
+token: "your_home_assistant_token_here"
 
 # 本服务监听地址
 server_host: "0.0.0.0"

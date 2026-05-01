@@ -582,6 +582,70 @@ curl http://localhost:5000/mock/devices
 
 ---
 
+## Mock / Real Home Assistant 一键切换
+
+### 1) Mock 模式如何配置
+
+编辑 `iot_service/config.yaml`：
+
+```yaml
+ha_url: "http://队友电脑IP:8123"
+token: "your_home_assistant_token_here"
+
+server_host: "0.0.0.0"
+server_port: 5001
+
+mock: true
+log_level: "INFO"
+```
+
+- `mock: true` 时服务会使用 `MockHAClient`，**不会访问真实 Home Assistant**。
+- Mock 启动时会读取 `devices.yaml`，自动创建所有 entity_id 的模拟状态，默认 `off`。
+
+`iot_service/devices.yaml` 继续使用 input_boolean 映射，例如：
+
+```yaml
+living_room_light: "input_boolean.living_room_light"
+bedroom_light: "input_boolean.bedroom_light"
+path_strip: "input_boolean.path_strip"
+medicine_light: "input_boolean.medicine_light"
+alarm_socket: "input_boolean.alarm_socket"
+night_light_socket: "input_boolean.night_light_socket"
+```
+
+### 2) Real 模式如何配置
+
+把 `iot_service/config.yaml` 的 `mock` 改为 `false`，并填真实 HA 地址和长期令牌：
+
+```yaml
+ha_url: "http://队友电脑IP:8123"
+token: "your_home_assistant_token_here"
+mock: false
+```
+
+### 3) 启动命令
+
+```bash
+cd iot_service
+uvicorn app:app --host 0.0.0.0 --port 5001
+```
+
+### 4) 测试命令
+
+```bash
+python3 test_iot_modes.py
+```
+
+### 5) Real 模式需要注意
+
+- `ha_url` 要改成队友电脑的 Home Assistant 地址
+- `token` 要换成真实长期访问令牌
+- `devices.yaml` 里的 entity_id 必须和队友 HA 里一致
+- 两台电脑必须在同一局域网
+- 防火墙不能拦截 8123 和 5001
+
+---
+
 ## 九、日志
 
 - 启动后在终端打印

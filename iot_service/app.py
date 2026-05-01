@@ -59,6 +59,12 @@ if USE_MOCK:
     ha = MockHAClient(preset_entities=list(DEVICES.values()))
     log.warning("运行在 MOCK 模式，使用内置模拟后端")
 else:
+    if not str(CONFIG.get("ha_url", "")).strip():
+        raise RuntimeError("真实 HA 模式下缺少 ha_url（请在 config.yaml 中设置 ha_url）")
+    if not str(CONFIG.get("token", "")).strip():
+        raise RuntimeError(
+            "真实 HA 模式下缺少 token（请在 config.yaml 中设置长期访问令牌 token）"
+        )
     ha = HAClient(
         base_url=CONFIG["ha_url"],
         token=CONFIG["token"],
