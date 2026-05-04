@@ -402,7 +402,8 @@ def scene_night_mode():
     log.info("场景: night_mode")
     steps = [
         _safe_turn_on("living_room_light", brightness=120),
-        _safe_turn_on("path_strip", brightness=180),
+        _safe_turn_on("path_strip", brightness=80, rgb_color=[255, 180, 80]),
+        _safe_turn_on("bedroom_light", brightness=50, color_temp_kelvin=3000),
         _safe_turn_on("night_light_socket"),
     ]
     ok = all(s.get("ok") for s in steps)
@@ -420,7 +421,8 @@ def scene_fall_alert():
     """跌倒报警：灯带变红 + 报警插座。"""
     log.info("场景: fall_alert")
     steps = [
-        _safe_turn_on("path_strip", rgb_color=[255, 0, 0], brightness=255),
+        _safe_turn_on("path_strip", brightness=255, rgb_color=[255, 0, 0]),
+        _safe_turn_on("bedroom_light", brightness=255, color_temp_kelvin=6400),
         _safe_turn_on("alarm_socket"),
     ]
     ok = all(s.get("ok") for s in steps)
@@ -433,19 +435,74 @@ def scene_fall_alert():
     }
 
 
+@app.post("/iot/scene/fall_clear", tags=["scene"])
+def scene_fall_clear():
+    """跌倒报警解除：关闭报警插座和路径灯带，不关闭卧室灯，不清除用药记录。"""
+    log.info("场景: fall_clear")
+    steps = [
+        _safe_turn_off("alarm_socket"),
+        _safe_turn_off("path_strip"),
+    ]
+    ok = all(s.get("ok") for s in steps)
+    return {
+        "ok": ok,
+        "code": 0 if ok else 2006,
+        "action": "scene_fall_clear",
+        "message": "success" if ok else "partial_failure",
+        "steps": steps,
+    }
+
+
 @app.post("/iot/scene/medicine_mode", tags=["scene"])
 def scene_medicine_mode():
-    """用药提醒：主灯 + 药盒提示灯。"""
+    """用药提醒：灯带蓝色闪烁提示。"""
     log.info("场景: medicine_mode")
     steps = [
-        _safe_turn_on("living_room_light", brightness=200),
-        _safe_turn_on("medicine_light", brightness=255),
+        _safe_turn_on("path_strip", brightness=160, rgb_color=[0, 120, 255]),
     ]
     ok = all(s.get("ok") for s in steps)
     return {
         "ok": ok,
         "code": 0 if ok else 2003,
         "action": "scene_medicine_mode",
+        "message": "success" if ok else "partial_failure",
+        "steps": steps,
+    }
+
+
+@app.post("/iot/scene/find_medicine_mode", tags=["scene"])
+def scene_find_medicine_mode():
+    """找药模式：打开卧室灯 + 灯带蓝色提示。"""
+    log.info("场景: find_medicine_mode")
+    steps = [
+        _safe_turn_on("bedroom_light", brightness=180, color_temp_kelvin=5000),
+        _safe_turn_on("path_strip", brightness=180, rgb_color=[0, 120, 255]),
+    ]
+    ok = all(s.get("ok") for s in steps)
+    return {
+        "ok": ok,
+        "code": 0 if ok else 2005,
+        "action": "scene_find_medicine_mode",
+        "message": "success" if ok else "partial_failure",
+        "steps": steps,
+    }
+
+
+@app.post("/iot/scene/reset_mode", tags=["scene"])
+def scene_reset_mode():
+    """系统复位：关闭当前真实设备，失败设备记录到 steps，不让服务崩溃。"""
+    log.info("场景: reset_mode")
+    steps = [
+        _safe_turn_off("bedroom_light"),
+        _safe_turn_off("path_strip"),
+        _safe_turn_off("alarm_socket"),
+        _safe_turn_off("night_light_socket"),
+    ]
+    ok = all(s.get("ok") for s in steps)
+    return {
+        "ok": ok,
+        "code": 0 if ok else 2004,
+        "action": "scene_reset_mode",
         "message": "success" if ok else "partial_failure",
         "steps": steps,
     }
@@ -478,7 +535,7 @@ def _run_custom_scene(scene_name: str, steps_cfg: List[Dict[str, Any]]) -> Dict[
     }
 
 
-_BUILTIN_SCENES = {"night_mode", "fall_alert", "medicine_mode"}
+_BUILTIN_SCENES = {"night_mode", "fall_alert", "fall_clear", "medicine_mode", "find_medicine_mode", "reset_mode"}
 _CUSTOM_SCENES: Dict[str, Dict[str, Any]] = CONFIG.get("scenes") or {}
 
 for _sname, _scfg in _CUSTOM_SCENES.items():

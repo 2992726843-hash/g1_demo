@@ -50,7 +50,7 @@
 
     curl -X POST http://localhost:5001/iot/device/on \
     -H "Content-Type: application/json" \
-    -d '{"name": "living_room_light"}'
+    -d '{"name": "bedroom_light"}'
 
     然后，再次检查设备状态：
 
@@ -72,3 +72,5 @@
     3.给予摔跤信息，检测模块检测到摔跤信息，若正常打通，则主函数会有对应提示
 
 
+curl -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJiOGM0MjM2NzAwNDk0YjQxYWY4N2RkMTVkMDM4MjMxNiIsImlhdCI6MTc3NzcyNjc5MywiZXhwIjoyMDkzMDg2NzkzfQ.AAaJO9ReMP2RBiIm7kk6ufp2epAxSgs2gG0LYpGLo_4" \
+  http://10.68.182.145:8123/api/states/light.hzsj_cn_2028564355_wy0a02_s_2_light

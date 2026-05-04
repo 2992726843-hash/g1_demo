@@ -128,6 +128,52 @@ class IoTController:
             self._print(f"调用失败: device_off name={dev} err={exc}")
             return False
 
+    def device_set(
+        self,
+        name: str,
+        service: str = "turn_on",
+        attributes: dict | None = None,
+    ) -> bool:
+        """调用 /iot/device/set：在已配置设备上执行指定 HA 服务并下发受限属性。"""
+        dev = (name or "").strip()
+        if not dev:
+            return False
+        svc = (service or "turn_on").strip() or "turn_on"
+        attrs = attributes if isinstance(attributes, dict) else {}
+        payload = {"name": dev, "service": svc, "attributes": attrs}
+        try:
+            self._print(f"设备设置: name={dev} service={svc} attributes={attrs}")
+            resp = requests.post(
+                f"{self.base_url}/iot/device/set",
+                json=payload,
+                timeout=self.timeout,
+            )
+            if self._ok(resp):
+                self._print(f"设备设置成功: name={dev} service={svc}")
+                return True
+            err: Any = None
+            try:
+                err = resp.json()
+            except Exception:  # noqa: BLE001
+                err = resp.text[:300]
+            logger.warning(
+                "[IoTController] 调用失败: device_set name=%s service=%s err=%s",
+                dev,
+                svc,
+                err,
+            )
+            self._print(f"调用失败: device_set name={dev} service={svc} err={err}")
+            return False
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "[IoTController] 调用失败: device_set name=%s service=%s err=%s",
+                dev,
+                svc,
+                exc,
+            )
+            self._print(f"调用失败: device_set name={dev} service={svc} err={exc}")
+            return False
+
     def get_status(self, name: str | None = None) -> dict:
         try:
             params = {}

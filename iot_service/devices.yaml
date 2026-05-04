@@ -3,16 +3,17 @@
 
 # 主灯
 living_room_light: "input_boolean.living_room_light"
-bedroom_light: "input_boolean.bedroom_light"
+#bedroom_light: "input_boolean.bedroom_light"
+bedroom_light: "light.hzsj_cn_2028564355_wy0a02_s_2_light"
 
 # 灯带
-path_strip: "input_boolean.path_strip"
-medicine_light: "input_boolean.medicine_light"
+#path_strip: "input_boolean.path_strip"
+path_strip: "light.sonoff_10016a06ec"
+medicine_light: "light.sonoff_10016a06ec"
 
 # 智能插座
-alarm_socket: "input_boolean.alarm_socket"
-night_light_socket: "input_boolean.night_light_socket"
-
+alarm_socket: "switch.wiing_cn_2029557138_v9icm_on_p_2_1"
+night_light_socket: "switch.wiing_cn_2029630976_v9icm_on_p_2_1"
 
 
 

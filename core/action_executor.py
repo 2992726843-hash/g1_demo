@@ -163,6 +163,15 @@ class ActionExecutor:
         self._interrupt_event.set()
         logger.warning("收到中断请求：已清空队列并设置中断标志。")
 
+    def clear_interrupt(self) -> None:
+        """
+        清除中断标志，允许后续新动作正常执行。
+
+        仅应在确认当前动作已停止（如 robot_stop 完成后）再调用。
+        """
+        self._interrupt_event.clear()
+        logger.info("中断标志已清除，后续新动作可正常执行。")
+
     def shutdown(self, timeout_s: float = 5.0) -> None:
         """
         安全退出主程序。
