@@ -6,6 +6,7 @@ living_room_light: "input_boolean.living_room_light"
 #bedroom_light: "input_boolean.bedroom_light"
 bedroom_light: "light.hzsj_cn_2028564355_wy0a02_s_2_light"
 
+
 # 灯带
 #path_strip: "input_boolean.path_strip"
 path_strip: "light.sonoff_10016a06ec"

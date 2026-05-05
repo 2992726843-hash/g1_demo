@@ -171,12 +171,29 @@ class SpeechManager:
             rate = tts_cfg.get("rate", 150)
             volume = tts_cfg.get("volume", 1.0)
             voice = tts_cfg.get("voice", "zh-CN-XiaoxiaoNeural")
+            proxy_base_url = ""
+            proxy_timeout_s = 3
+            try:
+                from core.utils import ConfigLoader  # type: ignore
+
+                cfg_loader = ConfigLoader()
+                proxy_base_url = str(cfg_loader.get_nested("robot", "proxy_base_url", default="") or "").strip()
+                proxy_timeout_s = cfg_loader.get_nested("robot", "proxy_timeout_s", default=3)
+            except Exception:
+                proxy_base_url = ""
+                proxy_timeout_s = 3
             self.tts = TTSClient(
                 enabled=tts_enabled,
                 backend=backend,
                 rate=rate,
                 volume=volume,
                 voice=voice,
+                g1_speaker_id=tts_cfg.get("g1_speaker_id", 0),
+                fallback_backend=tts_cfg.get("fallback_backend", "print"),
+                fallback_to_pc_tts=bool(tts_cfg.get("fallback_to_pc_tts", True)),
+                cooldown_retry_ms=tts_cfg.get("cooldown_retry_ms", 0),
+                proxy_base_url=proxy_base_url,
+                proxy_timeout_s=proxy_timeout_s,
                 logger=self.logger,
             )
         except Exception as exc:

@@ -147,6 +147,7 @@ class SystemCore:
         self.emergency_queue = queue.Queue()
         self._last_fall_event_ts = 0.0
         self._fall_event_cooldown = 5.0
+        self._fall_active = False
 
         # ===== Speech（可选模块：缺依赖/无设备时必须降级，不允许崩溃）=====
         try:
@@ -234,6 +235,42 @@ class SystemCore:
         except Exception:  # noqa: BLE001
             return
 
+    def _safe_stop_robot(self, reason: str) -> None:
+        try:
+            if hasattr(self.executor, "safe_stop_robot"):
+                self.executor.safe_stop_robot(reason=reason)
+            else:
+                self.executor.interrupt_current_action()
+        except Exception as exc:  # noqa: BLE001
+            self.logger.warning("[SystemCore] 安全停止机器人失败: reason=%s err=%s", reason, exc)
+
+    def _clear_emergency_queue_safe(self) -> None:
+        cleared = 0
+        try:
+            while True:
+                try:
+                    self.emergency_queue.get_nowait()
+                    cleared += 1
+                    try:
+                        self.emergency_queue.task_done()
+                    except Exception:
+                        pass
+                except queue.Empty:
+                    break
+            if cleared:
+                self.logger.info("[SystemCore] 已清空紧急事件残留: count=%s", cleared)
+        except Exception as exc:  # noqa: BLE001
+            self.logger.warning("[SystemCore] 清空紧急事件队列失败: %s", exc)
+
+    def _fall_robot_action_config(self) -> tuple[bool, str]:
+        try:
+            cfg = ConfigLoader()
+            enabled = bool(cfg.get_nested("emergency", "fall_robot_action_enabled", default=False))
+            action = str(cfg.get_nested("emergency", "fall_robot_action", default="hands_up") or "hands_up").strip()
+            return enabled, action
+        except Exception:
+            return False, "hands_up"
+
     def _emergency_worker_loop(self) -> None:
         while self.running:
             try:
@@ -265,6 +302,7 @@ class SystemCore:
             self.logger.warning(
                 "[Emergency] 触发跌倒紧急流程 fall_type=%s label=%s", fall_type, label
             )
+            self._fall_active = True
             self._set_state(self.EMERGENCY)
 
             try:
@@ -273,9 +311,9 @@ class SystemCore:
                 self.logger.warning("[Emergency] 停止语音失败: %s", exc)
 
             try:
-                self.executor.interrupt_current_action()
+                self._safe_stop_robot(reason="fall_alert")
             except Exception as exc:  # noqa: BLE001
-                self.logger.warning("[Emergency] 中断机器人动作失败: %s", exc)
+                self.logger.warning("[Emergency] 安全停止机器人失败: %s", exc)
 
             try:
                 self._set_state(self.EXECUTING_IOT_ACTION)
@@ -287,9 +325,13 @@ class SystemCore:
                 self.logger.exception("[Emergency][IoT] fall_alert 异常: %s", exc)
 
             try:
-                self._set_state(self.EXECUTING_ROBOT_ACTION)
-                self.logger.info("[Emergency] 提交机器人报警动作 hands_up")
-                self.executor.submit_action("hands_up", "")
+                enabled, action = self._fall_robot_action_config()
+                if enabled and action:
+                    self._set_state(self.EXECUTING_ROBOT_ACTION)
+                    self.logger.info("[Emergency] 配置允许，提交机器人报警动作 %s", action)
+                    self.executor.submit_action(action, "")
+                else:
+                    self.logger.info("[Emergency] 跌倒后不提交机器人动作，仅保持 safe_stop")
             except Exception as exc:  # noqa: BLE001
                 self.logger.warning("[Emergency][Robot] 报警动作提交失败: %s", exc)
 
@@ -313,6 +355,7 @@ class SystemCore:
 
         else:
             # is_fall=False：解除报警，不调用 reset_mode，不清除用药记录
+            self._fall_active = False
             self.logger.info("[Emergency] 收到跌倒状态解除事件")
             try:
                 ok = self.iot.call_scene("fall_clear")
@@ -384,10 +427,7 @@ class SystemCore:
                 return False
 
             # 1) 中断当前动作队列
-            try:
-                self.executor.interrupt_current_action()
-            except Exception:  # noqa: BLE001
-                pass
+            self._safe_stop_robot(reason="user_stop")
 
             # 2) 状态切换（不新增复杂状态，复用 EMERGENCY）
             try:
@@ -400,9 +440,56 @@ class SystemCore:
 
             # 3) 本地固定回复（不走 LLM）
             print("已停止当前任务。")
-            self.logger.info("[SystemCore] 高优先级中断触发：已中断当前动作。")
+            self.logger.info("[SystemCore] 高优先级中断触发：已执行 safe_stop。")
             return True
         except Exception:  # noqa: BLE001
+            return False
+
+    def _handle_system_reset_command(self, user_input: str) -> bool:
+        """
+        测试/演示后的清场复位：
+        - 不触发 fall_alert
+        - 不提交机器人普通动作
+        - 只做语音停止、机器人 safe_stop、紧急队列清空、IoT 默认场景恢复
+        """
+        try:
+            text = (user_input or "").strip()
+            if not text:
+                return False
+            keywords = ["系统复位", "恢复默认", "清空状态", "复位", "一键复位", "重置系统", "解除报警", "停止报警"]
+            if not any(k in text for k in keywords):
+                return False
+
+            self._set_state(self.EMERGENCY)
+            self._stop_speaking_safe()
+            self._safe_stop_robot(reason="system_reset")
+            self._clear_emergency_queue_safe()
+            self._fall_active = False
+            self._last_fall_event_ts = 0.0
+
+            try:
+                self._set_state(self.EXECUTING_IOT_ACTION)
+                ok = bool(self.iot.call_scene("system_reset"))
+                if not ok:
+                    self.logger.warning("[SystemReset][IoT] system_reset 不可用，尝试 reset_mode")
+                    ok = bool(self.iot.call_scene("reset_mode"))
+                if not ok:
+                    self.logger.warning("[SystemReset][IoT] 默认复位场景调用失败")
+            except Exception as exc:  # noqa: BLE001
+                self.logger.warning("[SystemReset][IoT] 复位场景调用异常: %s", exc)
+
+            try:
+                if self.medicine_manager is not None:
+                    self.medicine_manager.clear_today()
+            except Exception as exc:  # noqa: BLE001
+                self.logger.warning("[SystemReset] 清空用药状态失败: %s", exc)
+
+            print("系统已复位，已清空当前任务和报警状态。")
+            self.logger.info("[SystemReset] 系统复位完成，不提交机器人动作。")
+            self._set_state(self.IDLE)
+            return True
+        except Exception as exc:  # noqa: BLE001
+            self.logger.warning("[SystemReset] 系统复位处理失败: %s", exc)
             return False
 
     def run_loop(self):
@@ -419,6 +506,10 @@ class SystemCore:
                 self.logger.info("用户请求退出。")
                 self.running = False
                 break
+
+            # Step B.0: 系统复位（清场优先，不进入 LLM/普通任务规划）
+            if self._handle_system_reset_command(user_input):
+                continue
 
             # Step B.1: 高优先级语音中断（比赛优先、可中断、可抢占）
             # 关键词命中则直接停止播报+中断动作，不进入 LLM/动作分类。

@@ -110,6 +110,8 @@ class ActionExecutor:
         self._interrupt_event: threading.Event = threading.Event()
         # mock/real 切换：mock 模式下延迟创建并复用虚拟机器人实例，避免重复打印“已上线”
         self._mock_robot: Optional[Any] = None
+        # real/http_proxy 模式下延迟创建并复用 HTTP 客户端，避免每个动作重复初始化配置。
+        self._http_client: Optional[Any] = None
 
         # 额外内部控制：用于安全退出 worker（不暴露给外部）
         self._shutdown_event: threading.Event = threading.Event()
@@ -129,6 +131,21 @@ class ActionExecutor:
     # -----------------------------
     # 对外接口
     # -----------------------------
+    def _clear_pending_actions(self, reason: str = "") -> None:
+        cleared = 0
+        while not self._queue.empty():
+            try:
+                self._queue.get_nowait()
+                cleared += 1
+                try:
+                    self._queue.task_done()
+                except Exception:
+                    pass
+            except queue.Empty:
+                break
+        if cleared:
+            logger.info("已清空待执行动作队列：cleared=%s reason=%s", cleared, reason)
+
     def submit_action(self, action_name: str, target: str = "") -> None:
         """
         提交动作到队列。
@@ -138,11 +155,7 @@ class ActionExecutor:
           防止旧的移动/导航指令滞留导致行为不可控。
         """
         if action_name in ["navigate", "move", "stop"]:
-            while not self._queue.empty():
-                try:
-                    self._queue.get_nowait()
-                except queue.Empty:
-                    break
+            self._clear_pending_actions(reason=f"submit_{action_name}")
             logger.info("覆盖策略触发：已清空队列后提交动作：%s target=%s", action_name, target)
         else:
             logger.info("提交动作：%s target=%s", action_name, target)
@@ -155,13 +168,62 @@ class ActionExecutor:
         - 清空队列（不再执行排队动作）
         - 设置中断事件，通知正在执行的动作尽快停止
         """
-        while not self._queue.empty():
-            try:
-                self._queue.get_nowait()
-            except queue.Empty:
-                break
+        self._clear_pending_actions(reason="interrupt_current_action")
         self._interrupt_event.set()
         logger.warning("收到中断请求：已清空队列并设置中断标志。")
+
+    def safe_stop_robot(self, reason: str = "") -> None:
+        """
+        安全停止机器人：
+        - 清空本地动作队列
+        - 设置 interrupt 标志
+        - real + http_proxy 下直接调用 G1HttpClient.stop()，不排队
+        - mock 下调用 MockG1Robot.stop()
+
+        语义是 safe_stop：停止移动/播报/后续动作，尽量保持平衡，不做 Damp/趴下/断电类动作。
+        """
+        stop_reason = str(reason or "").strip() or "unknown"
+        logger.warning("[Robot][SAFE_STOP] 触发安全停止: reason=%s", stop_reason)
+        try:
+            self._clear_pending_actions(reason=f"safe_stop:{stop_reason}")
+            self._interrupt_event.set()
+
+            mode = str(ConfigLoader().get_nested("mode", default="mock") or "mock").strip().lower()
+            if mode == "mock":
+                try:
+                    from hardware.mock_g1 import MockG1Robot  # type: ignore
+
+                    if self._mock_robot is None:
+                        self._mock_robot = MockG1Robot()
+                    if hasattr(self._mock_robot, "stop"):
+                        self._mock_robot.stop()
+                    else:
+                        logger.info("[Robot][SAFE_STOP][MOCK] mock robot has no stop(); reason=%s", stop_reason)
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("[Robot][SAFE_STOP][MOCK] 停止失败已忽略: reason=%s err=%s", stop_reason, exc)
+                return
+
+            backend = self._get_robot_control_backend()
+            if backend == "http_proxy":
+                client = self._get_http_client()
+                if client is None:
+                    return
+                try:
+                    result = client.safe_stop() if hasattr(client, "safe_stop") else client.stop()
+                    if not bool(result.get("ok")):
+                        logger.warning("[Robot][SAFE_STOP][HTTP] stop 返回失败: reason=%s result=%s", stop_reason, result)
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("[Robot][SAFE_STOP][HTTP] stop 异常已忽略: reason=%s err=%s", stop_reason, exc)
+                return
+
+            try:
+                from hardware.real_g1 import RealG1Robot  # type: ignore
+
+                RealG1Robot().stop()
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("[Robot][SAFE_STOP][LOCAL_SDK] stop 异常已忽略: reason=%s err=%s", stop_reason, exc)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("[Robot][SAFE_STOP] 安全停止异常已忽略: reason=%s err=%s", stop_reason, exc)
 
     def clear_interrupt(self) -> None:
         """
@@ -208,7 +270,7 @@ class ActionExecutor:
         后台执行循环：
         - 阻塞读取队列
         - 按 ACTION_MAP 查表执行
-        - SDK 动作：hardware.real_g1.play_action
+        - SDK 动作：hardware.real_g1.play_action 或 G1 HTTP 代理
         - C++ 动作：subprocess.Popen + 轮询 + 中断/超时强杀
         """
         logger.info("worker loop 已启动。")
@@ -320,6 +382,11 @@ class ActionExecutor:
                 except Exception:
                     logger.exception("MOCK execute_action(%s) 执行异常：%s", action_id, action_name)
             else:
+                backend = self._get_robot_control_backend()
+                if backend == "http_proxy":
+                    self._run_arm_action_via_http_proxy(action_name=action_name, action_id=int(action_id))
+                    return
+
                 logger.info("当前为 REAL 模式，使用 Unitree SDK 执行动作。")
                 # 避免在 import 阶段就强依赖硬件模块：运行时导入，便于开发阶段单测/缺依赖启动。
                 from hardware.real_g1 import play_action  # type: ignore
@@ -396,6 +463,11 @@ class ActionExecutor:
                 mock_robot = self._mock_robot
                 mock_robot.loco_control(cmd)
             else:
+                backend = self._get_robot_control_backend()
+                if backend == "http_proxy":
+                    self._run_loco_action_via_http_proxy(action_name=action_name, target=target)
+                    return
+
                 logger.info(
                     "[REAL LOCO RESERVED] 真实底盘控制暂未接入：action=%s target=%s",
                     action_name,
@@ -407,6 +479,77 @@ class ActionExecutor:
             self._control_mode = "idle"
             self._interrupt_event.clear()
             time.sleep(0.3)
+
+    def _get_robot_control_backend(self) -> str:
+        try:
+            backend = ConfigLoader().get_nested("robot", "control_backend", default="local_sdk")
+        except Exception:
+            backend = "local_sdk"
+        return str(backend or "local_sdk").strip().lower() or "local_sdk"
+
+    def _get_http_client(self) -> Optional[Any]:
+        if self._http_client is not None:
+            return self._http_client
+        try:
+            cfg = ConfigLoader()
+            base_url = str(cfg.get_nested("robot", "proxy_base_url", default="") or "").strip()
+            timeout_s = cfg.get_nested("robot", "proxy_timeout_s", default=3)
+            from hardware.g1_http_client import G1HttpClient  # type: ignore
+
+            self._http_client = G1HttpClient(base_url=base_url, timeout_s=timeout_s)
+            return self._http_client
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("[G1 HTTP] 初始化 HTTP 客户端失败，已跳过本次动作: %s", exc)
+            return None
+
+    def _run_arm_action_via_http_proxy(self, action_name: str, action_id: int) -> None:
+        logger.info("[G1 HTTP] REAL 模式使用 HTTP 代理执行手臂动作: action=%s id=%s", action_name, action_id)
+        client = self._get_http_client()
+        if client is None:
+            return
+
+        try:
+            if int(action_id) == 99:
+                result = client.play_action(99, action_name=action_name)
+                if not bool(result.get("ok")):
+                    logger.warning("[G1 HTTP] release_arm 发送失败: action=%s result=%s", action_name, result)
+                return
+
+            release_result = client.play_action(99, action_name="release_arm")
+            if not bool(release_result.get("ok")):
+                logger.warning("[G1 HTTP] release_arm 发送失败: action=%s result=%s", action_name, release_result)
+
+            time.sleep(0.1)
+            if self._interrupt_event.is_set():
+                logger.warning("[G1 HTTP] 动作 %s 在 release_arm 后检测到中断，跳过实际动作。", action_name)
+                return
+
+            action_result = client.play_action(int(action_id), action_name=action_name)
+            if not bool(action_result.get("ok")):
+                logger.warning(
+                    "[G1 HTTP] arm action 发送失败: action=%s id=%s result=%s",
+                    action_name,
+                    action_id,
+                    action_result,
+                )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("[G1 HTTP] arm action 执行异常已忽略: action=%s id=%s err=%s", action_name, action_id, exc)
+
+    def _run_loco_action_via_http_proxy(self, action_name: str, target: str) -> None:
+        logger.info("[G1 HTTP] REAL 模式使用 HTTP 代理执行底盘动作: action=%s target=%s", action_name, target)
+        client = self._get_http_client()
+        if client is None:
+            return
+
+        try:
+            if action_name == "stop":
+                result = client.stop()
+            else:
+                result = client.loco_control(action_name, target=target)
+            if not bool(result.get("ok")):
+                logger.warning("[G1 HTTP] loco action 发送失败: action=%s target=%s result=%s", action_name, target, result)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("[G1 HTTP] loco action 执行异常已忽略: action=%s target=%s err=%s", action_name, target, exc)
 
     def _run_cpp_action(self, action_name: str, target: str, path: Optional[str], timeout_s: float) -> None:
         if not path:

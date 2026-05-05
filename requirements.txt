@@ -1,4 +1,5 @@
 PyYAML>=6.0
+requests>=2.31.0
 
 # modules/speech — PC 端最小语音闭环（按需安装）
 sounddevice>=0.4.6

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-05-04T18:56:01",
+  "updated_at": "2026-05-05T17:11:20",
   "days": {
     "2026-05-03": {
       "taken": false,
@@ -13,6 +13,16 @@
       "last_reminded_at": null
     },
     "2026-05-04": {
+      "taken": false,
+      "taken_at": null,
+      "snoozed": false,
+      "snoozed_at": null,
+      "snooze_minutes": null,
+      "refused": false,
+      "refused_at": null,
+      "last_reminded_at": null
+    },
+    "2026-05-05": {
       "taken": false,
       "taken_at": null,
       "snoozed": false,

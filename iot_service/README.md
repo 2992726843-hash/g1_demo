@@ -124,6 +124,8 @@ night_light_socket:"switch.night_light_socket"
 | `alarm_socket` | `switch.alarm_socket` | 报警器 / 蜂鸣器插座 |
 | `night_light_socket` | `switch.night_light_socket` | 小夜灯插座 |
 
+`alarm_socket` 当前接的是断电报警器：`turn_off` 表示插座断电、报警器响；`turn_on` 表示插座有电、报警器静音。场景里通过 `device_behaviors.alarm_socket` 使用这个反向语义，普通 `/iot/device/on` 和 `/iot/device/off` 仍保持通用插座语义。
+
 ---
 
 ## 五、接口说明
@@ -212,8 +214,11 @@ night_light_socket:"switch.night_light_socket"
 | Method | Path | 行为 |
 |--------|------|------|
 | POST | `/iot/scene/night_mode` | 主灯（低亮）+ 路径灯带 + 小夜灯插座 |
-| POST | `/iot/scene/fall_alert` | 灯带切红色满亮 + 报警器插座 |
+| POST | `/iot/scene/fall_alert` | 灯带切红色满亮 + `alarm_socket` 执行 `switch.turn_off` 触发断电报警 |
+| POST | `/iot/scene/fall_clear` | `alarm_socket` 执行 `switch.turn_on` 静音 + 关闭路径灯带 |
 | POST | `/iot/scene/medicine_mode` | 主灯（中亮）+ 药盒提示灯 |
+| POST | `/iot/scene/reset_mode` | 关闭灯光和普通插座，`alarm_socket` 执行 `switch.turn_on` 静音 |
+| POST | `/iot/scene/system_reset` | 与 `reset_mode` 行为一致，供主控系统复位直接调用 |
 
 返回示例：
 

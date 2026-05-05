@@ -19,6 +19,14 @@ mock: false   # ← 改成 false 才会真正调用 HA
 # 日志级别: DEBUG / INFO / WARNING / ERROR
 log_level: "INFO"
 
+# 设备特殊行为配置。
+# alarm_socket 是断电报警器：插座断电会响，插座有电会静音。
+device_behaviors:
+  alarm_socket:
+    type: "power_cut_alarm"
+    alarm_on_service: "turn_off"
+    alarm_off_service: "turn_on"
+
 # --------------------------------------------------------------------------- #
 # 自定义场景（可选）
 # 每个场景会自动注册为 POST /iot/scene/{name} 接口。

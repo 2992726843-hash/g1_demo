@@ -66,6 +66,9 @@
     "alarm_socket": "off",
     "night_light_socket": "off"
     }
+    注：alarm_socket 当前接的是断电报警器，场景语义与普通插座相反：
+        fall_alert 时执行 switch.turn_off，插座断电，报警器响；
+        reset_mode/system_reset/fall_clear 时执行 switch.turn_on，插座有电，报警器静音。
 二、摔跤监测模块和主控模块协同测试：
     1.主控电脑和部署监测模块的电脑（连接同一个wifi，尽量不用校园网）（摔跤检测模块应根据局域网修改实际的参数）
     2.主控电脑运行主函数main.py(python3 main.py),部署摔跤检测模块开启摔跤检测函数；

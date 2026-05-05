@@ -37,7 +37,7 @@ def _warn(logger: Any, msg: str) -> None:
 class TTSClient:
     """
     TTSClient：
-    - backend: print / pyttsx3 / edge_tts
+    - backend: print / pyttsx3 / edge_tts / g1_http
     - 任意后端失败都不抛异常到上层（主控必须稳定）
     - edge_tts 失败自动降级为 print
     """
@@ -49,6 +49,12 @@ class TTSClient:
         rate: Any = 150,
         volume: Any = 1.0,
         voice: str = "zh-CN-XiaoxiaoNeural",
+        g1_speaker_id: Any = 0,
+        fallback_backend: str = "print",
+        fallback_to_pc_tts: bool = True,
+        cooldown_retry_ms: Any = 0,
+        proxy_base_url: str = "",
+        proxy_timeout_s: Any = 3,
         logger: Optional[Any] = None,
     ) -> None:
         self.logger = logger
@@ -62,7 +68,24 @@ class TTSClient:
 
         self._engine: Any = None
         self._available: bool = False
-        self._fallback_backend: str = "print"
+        self._fallback_backend: str = str(fallback_backend or "print").strip().lower() or "print"
+        if self._fallback_backend == "g1_http":
+            self._fallback_backend = "print"
+        self._fallback_to_pc_tts: bool = bool(fallback_to_pc_tts)
+        self._g1_client: Any = None
+        self._g1_proxy_base_url: str = str(proxy_base_url or "").strip()
+        try:
+            self._g1_proxy_timeout_s: float = float(proxy_timeout_s)
+        except Exception:
+            self._g1_proxy_timeout_s = 3.0
+        try:
+            self._g1_speaker_id: int = int(g1_speaker_id)
+        except Exception:
+            self._g1_speaker_id = 0
+        try:
+            self._cooldown_retry_ms: int = int(cooldown_retry_ms)
+        except Exception:
+            self._cooldown_retry_ms = 0
 
         # edge-tts 输出文件
         self._edge_output_path = str(Path("/tmp") / "g1_tts_output.mp3")
@@ -93,33 +116,26 @@ class TTSClient:
             return
 
         if self.backend == "pyttsx3":
-            try:
-                import pyttsx3  # type: ignore
-
-                engine = pyttsx3.init()
-                self.pyttsx3_rate = self._to_pyttsx3_rate(rate, engine=engine, default=150)
-                self.pyttsx3_volume = self._to_pyttsx3_volume(volume, engine=engine, default=1.0)
-                try:
-                    engine.setProperty("rate", self.pyttsx3_rate)
-                except Exception:
-                    pass
-                try:
-                    engine.setProperty("volume", self.pyttsx3_volume)
-                except Exception:
-                    pass
-                self._engine = engine
+            if self._ensure_pyttsx3_engine():
                 self._available = True
                 _log(
                     self.logger,
                     f"[Speech] TTS 初始化成功（pyttsx3，rate={self.pyttsx3_rate}, volume={self.pyttsx3_volume}）",
                 )
                 return
-            except Exception as exc:
-                _warn(self.logger, f"[Speech][WARN] TTS 初始化失败（pyttsx3），将降级为 print：{exc}")
-                self.backend = self._fallback_backend
-                self._engine = None
-                self._available = True
-                return
+            _warn(self.logger, "[Speech][WARN] TTS 初始化失败（pyttsx3），将降级为 print")
+            self.backend = self._fallback_backend
+            self._engine = None
+            self._available = True
+            return
+
+        if self.backend == "g1_http":
+            self._available = True
+            _log(
+                self.logger,
+                f"[Speech] TTS 初始化成功（g1_http，base_url={self._g1_proxy_base_url}, speaker_id={self._g1_speaker_id}）",
+            )
+            return
 
         _warn(self.logger, f"[Speech][WARN] 未支持的 TTS backend={self.backend}，将降级为 print")
         self.backend = self._fallback_backend
@@ -219,6 +235,30 @@ class TTSClient:
             return default
         return default
 
+    def _ensure_pyttsx3_engine(self) -> bool:
+        if self._engine is not None:
+            return True
+        try:
+            import pyttsx3  # type: ignore
+
+            engine = pyttsx3.init()
+            self.pyttsx3_rate = self._to_pyttsx3_rate(self.rate_raw, engine=engine, default=150)
+            self.pyttsx3_volume = self._to_pyttsx3_volume(self.volume_raw, engine=engine, default=1.0)
+            try:
+                engine.setProperty("rate", self.pyttsx3_rate)
+            except Exception:
+                pass
+            try:
+                engine.setProperty("volume", self.pyttsx3_volume)
+            except Exception:
+                pass
+            self._engine = engine
+            return True
+        except Exception as exc:
+            _warn(self.logger, f"[Speech][WARN] pyttsx3 初始化失败：{exc}")
+            self._engine = None
+            return False
+
     def speak(self, text: str) -> None:
         try:
             t = (text or "").strip()
@@ -236,21 +276,18 @@ class TTSClient:
                 return
 
             if self.backend == "pyttsx3":
-                if self._engine is None:
-                    self._print_backend(t)
-                    return
-                try:
-                    self._engine.say(t)
-                    self._engine.runAndWait()
-                except Exception as exc:
-                    _warn(self.logger, f"[Speech][WARN] TTS 播报失败（pyttsx3），已降级为 print：{exc}")
-                    self._print_backend(t)
+                if not self._speak_with_backend(t, "pyttsx3"):
+                    self._fallback_speak(t, "pyttsx3 failed")
                 return
 
             if self.backend == "edge_tts":
-                ok = self._edge_tts_speak_blocking(t)
-                if not ok:
-                    self._print_backend(t)
+                if not self._speak_with_backend(t, "edge_tts"):
+                    self._fallback_speak(t, "edge_tts failed")
+                return
+
+            if self.backend == "g1_http":
+                if not self._g1_http_speak(t):
+                    self._fallback_speak(t, "g1_http failed")
                 return
 
             # 未知 backend：降级
@@ -337,10 +374,60 @@ class TTSClient:
             _warn(self.logger, f"[Speech][WARN] edge_tts 播报失败，将降级为 print：{exc}")
             return False
 
+    def _speak_with_backend(self, text: str, backend: str) -> bool:
+        b = str(backend or "print").strip().lower()
+        if b == "print":
+            self._print_backend(text)
+            return True
+        if b == "edge_tts":
+            return bool(self._edge_tts_speak_blocking(text))
+        if b == "pyttsx3":
+            if not self._ensure_pyttsx3_engine() or self._engine is None:
+                return False
+            try:
+                self._engine.say(text)
+                self._engine.runAndWait()
+                return True
+            except Exception as exc:
+                _warn(self.logger, f"[Speech][WARN] TTS 播报失败（pyttsx3）：{exc}")
+                return False
+        return False
+
+    def _fallback_speak(self, text: str, reason: str) -> None:
+        if not self._fallback_to_pc_tts:
+            _warn(self.logger, f"[Speech][WARN] {reason}，fallback_to_pc_tts=false，仅打印文本")
+            self._print_backend(text)
+            return
+
+        fallback = self._fallback_backend if self._fallback_backend != "g1_http" else "print"
+        _warn(self.logger, f"[Speech][WARN] {reason}，回退到 {fallback}")
+        if not self._speak_with_backend(text, fallback):
+            self._print_backend(text)
+
+    def _g1_http_speak(self, text: str) -> bool:
+        try:
+            if self._g1_client is None:
+                from hardware.g1_http_client import G1HttpClient  # type: ignore
+
+                self._g1_client = G1HttpClient(
+                    base_url=self._g1_proxy_base_url,
+                    timeout_s=self._g1_proxy_timeout_s,
+                )
+            result = self._g1_client.speak(text, speaker_id=self._g1_speaker_id)
+            if bool(result.get("ok")):
+                return True
+            _warn(self.logger, f"[Speech][WARN] G1 HTTP TTS 返回失败: {result}")
+            return False
+        except Exception as exc:  # noqa: BLE001
+            _warn(self.logger, f"[Speech][WARN] G1 HTTP TTS 异常: {exc}")
+            return False
+
     def stop(self) -> None:
         try:
             if self.backend == "pyttsx3" and self._engine is not None:
                 self._engine.stop()
+            elif self.backend == "g1_http":
+                _log(self.logger, "[Speech] g1_http 当前无独立 speak_stop，stop_speaking 暂不调用机器人 stop")
         except Exception:
             return
 

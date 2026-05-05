@@ -396,6 +396,84 @@ def _safe_turn_off(logical: str) -> Dict[str, Any]:
         return {"name": logical, "entity_id": eid, "ok": False, "message": str(e)}
 
 
+DEVICE_BEHAVIORS: Dict[str, Dict[str, Any]] = CONFIG.get("device_behaviors") or {}
+
+
+def _alarm_behavior(logical: str) -> Dict[str, Any]:
+    behavior = DEVICE_BEHAVIORS.get(logical)
+    if isinstance(behavior, dict) and behavior:
+        return behavior
+    if logical == "alarm_socket":
+        log.warning("alarm_socket 未配置 device_behaviors，默认按断电报警器处理")
+        return {
+            "type": "power_cut_alarm",
+            "alarm_on_service": "turn_off",
+            "alarm_off_service": "turn_on",
+        }
+    return {}
+
+
+def _service_name(raw: Any, default: str) -> str:
+    service = str(raw or default).strip().lower() or default
+    if "." in service:
+        service = service.rsplit(".", 1)[-1]
+    if service not in ("turn_on", "turn_off"):
+        log.warning("报警器 service=%s 不支持，回退为 %s", service, default)
+        return default
+    return service
+
+
+def _safe_alarm_action(logical: str, semantic: str) -> Dict[str, Any]:
+    if logical not in DEVICES:
+        return {"name": logical, "ok": False, "message": "device_not_configured"}
+    eid = DEVICES[logical]
+    behavior = _alarm_behavior(logical)
+    is_power_cut_alarm = str(behavior.get("type", "")).strip().lower() == "power_cut_alarm"
+    if semantic == "alarm_on":
+        default_service = "turn_off" if is_power_cut_alarm else "turn_on"
+        service = _service_name(behavior.get("alarm_on_service"), default_service)
+    else:
+        default_service = "turn_on" if is_power_cut_alarm else "turn_off"
+        service = _service_name(behavior.get("alarm_off_service"), default_service)
+
+    domain = eid.split(".", 1)[0]
+    log.info("%s %s -> %s.%s", logical, semantic, domain, service)
+    try:
+        if service == "turn_on":
+            ha.turn_on(eid)
+        else:
+            ha.turn_off(eid)
+        st = ha.get_state(eid)
+        return {
+            "name": logical,
+            "entity_id": eid,
+            "ok": True,
+            "state": st.get("state"),
+            "semantic": semantic,
+            "service": f"{domain}.{service}",
+            "message": f"{logical} {semantic} -> {domain}.{service}",
+        }
+    except HAError as e:
+        return {
+            "name": logical,
+            "entity_id": eid,
+            "ok": False,
+            "semantic": semantic,
+            "service": f"{domain}.{service}",
+            "message": str(e),
+        }
+
+
+def _safe_alarm_on(logical: str) -> Dict[str, Any]:
+    """报警器响：断电报警器使用 turn_off。"""
+    return _safe_alarm_action(logical, "alarm_on")
+
+
+def _safe_alarm_off(logical: str) -> Dict[str, Any]:
+    """报警器静音：断电报警器使用 turn_on。"""
+    return _safe_alarm_action(logical, "alarm_off")
+
+
 @app.post("/iot/scene/night_mode", tags=["scene"])
 def scene_night_mode():
     """夜间起夜辅助：主灯 + 路径灯带 + 小夜灯插座。"""
@@ -423,7 +501,7 @@ def scene_fall_alert():
     steps = [
         _safe_turn_on("path_strip", brightness=255, rgb_color=[255, 0, 0]),
         _safe_turn_on("bedroom_light", brightness=255, color_temp_kelvin=6400),
-        _safe_turn_on("alarm_socket"),
+        _safe_alarm_on("alarm_socket"),
     ]
     ok = all(s.get("ok") for s in steps)
     return {
@@ -440,7 +518,7 @@ def scene_fall_clear():
     """跌倒报警解除：关闭报警插座和路径灯带，不关闭卧室灯，不清除用药记录。"""
     log.info("场景: fall_clear")
     steps = [
-        _safe_turn_off("alarm_socket"),
+        _safe_alarm_off("alarm_socket"),
         _safe_turn_off("path_strip"),
     ]
     ok = all(s.get("ok") for s in steps)
@@ -495,7 +573,7 @@ def scene_reset_mode():
     steps = [
         _safe_turn_off("bedroom_light"),
         _safe_turn_off("path_strip"),
-        _safe_turn_off("alarm_socket"),
+        _safe_alarm_off("alarm_socket"),
         _safe_turn_off("night_light_socket"),
     ]
     ok = all(s.get("ok") for s in steps)
@@ -503,6 +581,26 @@ def scene_reset_mode():
         "ok": ok,
         "code": 0 if ok else 2004,
         "action": "scene_reset_mode",
+        "message": "success" if ok else "partial_failure",
+        "steps": steps,
+    }
+
+
+@app.post("/iot/scene/system_reset", tags=["scene"])
+def scene_system_reset():
+    """系统复位别名：与 reset_mode 行为一致，供 PC 主控直接调用。"""
+    log.info("场景: system_reset")
+    steps = [
+        _safe_turn_off("bedroom_light"),
+        _safe_turn_off("path_strip"),
+        _safe_alarm_off("alarm_socket"),
+        _safe_turn_off("night_light_socket"),
+    ]
+    ok = all(s.get("ok") for s in steps)
+    return {
+        "ok": ok,
+        "code": 0 if ok else 2007,
+        "action": "scene_system_reset",
         "message": "success" if ok else "partial_failure",
         "steps": steps,
     }
@@ -535,7 +633,15 @@ def _run_custom_scene(scene_name: str, steps_cfg: List[Dict[str, Any]]) -> Dict[
     }
 
 
-_BUILTIN_SCENES = {"night_mode", "fall_alert", "fall_clear", "medicine_mode", "find_medicine_mode", "reset_mode"}
+_BUILTIN_SCENES = {
+    "night_mode",
+    "fall_alert",
+    "fall_clear",
+    "medicine_mode",
+    "find_medicine_mode",
+    "reset_mode",
+    "system_reset",
+}
 _CUSTOM_SCENES: Dict[str, Dict[str, Any]] = CONFIG.get("scenes") or {}
 
 for _sname, _scfg in _CUSTOM_SCENES.items():
