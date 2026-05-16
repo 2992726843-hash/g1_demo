@@ -84,11 +84,11 @@ speech:
   # - text：键盘输入，最稳，适合调试
   # - voice：只用麦克风
   # - hybrid：优先语音，失败后回退键盘
-  input_mode: "text"
+  input_mode: "hybrid"
 
   # 当前只实现固定时长录音。
   record_mode: "fixed"
-  record_seconds: 4
+  record_seconds: 3
   sample_rate: 16000
   channels: 1
   language: "zh"

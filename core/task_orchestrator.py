@@ -330,8 +330,7 @@ class TaskOrchestrator:
                 steps=[
                     TaskStep(type="iot_scene", name="night_mode"),
                     TaskStep(type="speak", text="夜间辅助灯已经打开，我带您去卫生间，请慢一点。"),
-                    TaskStep(type="robot", action="navigate", target="卫生间"),
-                    TaskStep(type="robot", action="wave_hand"),
+                    TaskStep(type="robot", action="right_hand_up"),
                 ],
             )
 
@@ -403,7 +402,7 @@ class TaskOrchestrator:
                     intent=intent_dict,
                     steps=[
                         TaskStep(type="iot_device_on", name=device_name, label=label),
-                        TaskStep(type="robot", action="wave_hand"),
+                        TaskStep(type="robot", action="heart"),
                         TaskStep(type="speak", text=f"{label}已经打开。"),
                     ],
                 )
@@ -415,7 +414,7 @@ class TaskOrchestrator:
                     intent=intent_dict,
                     steps=[
                         TaskStep(type="iot_device_off", name=device_name, label=label),
-                        TaskStep(type="robot", action="wave_hand"),
+                        TaskStep(type="robot", action="heart"),
                         TaskStep(type="speak", text=f"{label}已经关闭。"),
                     ],
                 )
@@ -467,7 +466,6 @@ class TaskOrchestrator:
                 intent=intent_dict,
                 steps=[
                     TaskStep(type="medicine_query_today"),
-                    TaskStep(type="robot", action="wave_hand"),
                     TaskStep(type="speak", text=""),
                 ],
             )
@@ -484,8 +482,8 @@ class TaskOrchestrator:
                 intent=intent_dict,
                 steps=[
                     TaskStep(type="medicine_record", meta={"action": "taken"}),
-                    TaskStep(type="robot", action="clap"),
                     TaskStep(type="iot_scene", name="reset_mode"),
+                    TaskStep(type="robot", action="clap"),
                     TaskStep(type="speak", text="已记录您今天已服药。"),
                 ],
             )
@@ -498,7 +496,7 @@ class TaskOrchestrator:
                 intent=intent_dict,
                 steps=[
                     TaskStep(type="medicine_record", meta={"action": "refused"}),
-                    TaskStep(type="robot", action="reject"),
+                    TaskStep(type="robot", action="x_ray"),
                     TaskStep(type="speak", text="我理解您现在不太想吃药，但按时用药很重要。要不要我稍后再提醒您？"),
                 ],
             )
@@ -540,7 +538,7 @@ class TaskOrchestrator:
                 steps=[
                     TaskStep(type="iot_scene", name="medicine_mode"),
                     TaskStep(type="medicine_record", meta={"action": "reminded"}),
-                    TaskStep(type="robot", action="hands_up"),
+                    TaskStep(type="robot", action="wave_face"),
                     TaskStep(type="speak", text="现在是用药时间，请按时服药。"),
                 ],
             )
@@ -628,7 +626,7 @@ class TaskOrchestrator:
                     label=label,
                     meta={"operation": operation, "devices": devices},
                 ),
-                TaskStep(type="robot", action="wave_hand"),
+                TaskStep(type="robot", action="heart"),
                 TaskStep(type="speak", text=self._group_speak_text(label, operation)),
             ],
         )
@@ -648,7 +646,7 @@ class TaskOrchestrator:
             intent=intent_dict,
             steps=[
                 TaskStep(type=step_type, name=self.DEFAULT_LIGHT, label=self.DEFAULT_LIGHT_LABEL),
-                TaskStep(type="robot", action="wave_hand"),
+                TaskStep(type="robot", action="heart"),
                 TaskStep(type="speak", text=f"{self.DEFAULT_LIGHT_LABEL}已经{action_text}。"),
             ],
         )
@@ -830,7 +828,7 @@ class TaskOrchestrator:
                     label=label,
                     meta={"service": "turn_on", "attributes": dict(attrs)},
                 ),
-                TaskStep(type="robot", action="wave_hand"),
+                TaskStep(type="robot", action="heart"),
                 TaskStep(type="speak", text=self._light_set_success_speak(label, attrs, reason)),
             ],
         )
@@ -1045,7 +1043,7 @@ class TaskOrchestrator:
                     intent=intent,
                     steps=[
                         TaskStep(type="iot_scene", name=action),
-                        TaskStep(type="robot", action="wave_hand"),
+                        TaskStep(type="robot", action="heart"),
                         TaskStep(type="speak", text=reply or "家电场景已经执行。"),
                     ],
                 )
@@ -1057,7 +1055,7 @@ class TaskOrchestrator:
                     intent=intent,
                     steps=[
                         TaskStep(type="iot_device_on", name=self.DEFAULT_LIGHT, label=self.DEFAULT_LIGHT_LABEL),
-                        TaskStep(type="robot", action="wave_hand"),
+                        TaskStep(type="robot", action="heart"),
                         TaskStep(type="speak", text=reply or f"{self.DEFAULT_LIGHT_LABEL}已经打开。"),
                     ],
                 )
@@ -1069,7 +1067,7 @@ class TaskOrchestrator:
                     intent=intent,
                     steps=[
                         TaskStep(type="iot_device_off", name=self.DEFAULT_LIGHT, label=self.DEFAULT_LIGHT_LABEL),
-                        TaskStep(type="robot", action="wave_hand"),
+                        TaskStep(type="robot", action="heart"),
                         TaskStep(type="speak", text=reply or f"{self.DEFAULT_LIGHT_LABEL}已经关闭。"),
                     ],
                 )
