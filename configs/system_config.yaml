@@ -25,7 +25,7 @@ robot:
   control_backend: "http_proxy"
 
   # G1 本机 HTTP 代理地址。必须写完整 URL：协议 + IP + 端口。
-  # 正确示例：http://192.168.1.114:9001
+  # 正确示例：http://192.168.1.114:9001  http://192.168.10.104:9001
   # 错误示例：192.168.1.114
   proxy_base_url: "http://192.168.10.104:9001"
   proxy_timeout_s: 3
@@ -37,6 +37,18 @@ robot:
 # mock：不执行真实机器人动作，适合只测语音、LLM、IoT、主控流程。
 # real：执行真实机器人动作；如果 robot.control_backend=http_proxy，则走 G1 HTTP 代理。
 mode: "real"
+
+
+# ============================================================
+# 2.1 调试与性能诊断
+# ============================================================
+debug:
+  # 打印 [PERF] 分段耗时日志，用于定位语音交互延迟瓶颈。
+  perf_log: false
+  # 比赛演示关闭详细过程日志；调试时可改回 true。
+  verbose_log: false
+  task_step_log: false
+  asr_detail_log: false
 
 
 # ============================================================
@@ -68,7 +80,7 @@ llm:
   base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
 
   # 敏感信息。后续建议改成从环境变量读取。
-  api_key: "sk-ca0b9154ca084c2593bd4f5d2bc1cc41"
+  api_key: "sk-68f04f2f2d764bf49157412159bf8cc1"
 
   # qwen-plus 综合效果较好；qwen-turbo 更快更便宜。
   model_name: "qwen-plus"
@@ -81,10 +93,11 @@ speech:
   enabled: true
 
   # 输入模式：
-  # - text：键盘输入，最稳，适合调试
-  # - voice：只用麦克风
+  # - text/manual：键盘输入，最稳，适合调试
+  # - voice/speech：只用麦克风（仍保留按 Enter 录音的兼容行为）
   # - hybrid：优先语音，失败后回退键盘
-  input_mode: "hybrid"
+  # - wake_word：自动短录音监听“小航小航”，唤醒后录正式指令
+  input_mode: "wake_word"
 
   # 当前只实现固定时长录音。
   record_mode: "fixed"
@@ -95,6 +108,32 @@ speech:
 
   # null 表示使用系统默认麦克风。
   input_device: null
+
+  # ------------------------------------------------------------
+  # Wake Word：默认使用 sherpa-onnx 本地 KWS，simple_asr/mock 保留为兜底
+  # ------------------------------------------------------------
+  wake_word:
+    enabled: true
+    engine: "sherpa_onnx"
+    keyword: "小航小航"
+    reply: "我在"
+    command_record_seconds: 3.5
+    wake_reply_grace_seconds: 0.2
+
+    # simple_asr 回退参数
+    wake_record_seconds: 2.0
+    cooldown_sec: 0.3
+
+    # sherpa-onnx 本地中文 KWS
+    sherpa_onnx:
+      model_dir: "models/kws/sherpa-onnx-kws-zipformer-wenetspeech-3.3M-2024-01-01"
+      keywords_file: "configs/kws/keywords.txt"
+      sample_rate: 16000
+      num_threads: 2
+      provider: "cpu"
+      max_active_paths: 4
+      audio_block_size: 0.1
+      tail_padding_seconds: 0.3
 
   # ------------------------------------------------------------
   # ASR：语音识别

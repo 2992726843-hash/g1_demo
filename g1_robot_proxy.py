@@ -16,9 +16,16 @@ PORT = 9001
 DDS_INTERFACE = "eth0"
 SDK_DIR = "/home/unitree/mydemo/unitree_sdk2_python"
 LOCAL_SDK_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "unitree_sdk2_python")
+
 SAFE_MODE = True
 RELEASE_BEFORE_ARM_ACTION = True
-TTS_COOLDOWN_S = 8.0
+
+# 重要：
+# 之前这里是 8.0，会导致 “我在” 之后 8 秒内的任务反馈无法发声。
+# 当前默认不做 TTS 冷却；如果后续确实需要限频，可用环境变量设置，例如：
+# export G1_TTS_COOLDOWN_S=0.3
+TTS_COOLDOWN_S = float(os.environ.get("G1_TTS_COOLDOWN_S", "0.0"))
+
 AUDIO_APP_NAME = "g1_robot_proxy"
 
 SAFE_ARM_ACTIONS: Dict[str, int] = {
@@ -45,6 +52,13 @@ ARM_ACTION_ALIASES: Dict[str, str] = {
     "say_hello": "wave_hand",
     "goodbye": "wave_face",
     "blow_kiss": "two_hand_kiss",
+}
+
+
+LOCO_DEMO_ACTIONS: Dict[str, Tuple[float, float, float, float]] = {
+    "move_forward_short": (0.20, 0.0, 0.0, 4.5),
+    "move_forward_long": (0.20, 0.0, 0.0, 12.0),
+    "turn_right_90": (0.0, 0.0, -0.35, 4.5),
 }
 
 
@@ -119,6 +133,7 @@ class RobotProxyState:
             "safe_arm_actions": dict(SAFE_ARM_ACTIONS),
             "arm_action_aliases": dict(ARM_ACTION_ALIASES),
             "tts_cooldown_s": TTS_COOLDOWN_S,
+            "stop_semantics": "/api/robot/stop is soft no-op; use /api/robot/motion_stop for real StopMove",
         }
 
 
@@ -156,16 +171,20 @@ def handle_action(body: Dict[str, Any]) -> Dict[str, Any]:
 
     requested_name = str(body.get("action_name") or "").strip()
     action_name = ARM_ACTION_ALIASES.get(requested_name, requested_name)
+
     if action_name not in SAFE_ARM_ACTIONS:
         return _json_response(False, error=f"action_name not allowed in safe mode: {requested_name!r}")
+
     if action_name != requested_name:
         _log(f"Mapped arm action alias: {requested_name} -> {action_name}")
 
     expected_id = int(SAFE_ARM_ACTIONS[action_name])
+
     try:
         requested_id = int(body.get("action_id"))
     except Exception:
         requested_id = expected_id
+
     if requested_id != expected_id:
         _log(
             "WARNING: action_id mismatch; using whitelist id. "
@@ -176,8 +195,19 @@ def handle_action(body: Dict[str, Any]) -> Dict[str, Any]:
     with STATE.lock:
         if action_name != "release_arm" and RELEASE_BEFORE_ARM_ACTION:
             _log(f"Running release_arm before action: {action_name}")
-            steps.append(_call_sdk_step("release_arm", lambda: STATE.arm_client.ExecuteAction(SAFE_ARM_ACTIONS["release_arm"])))
-        steps.append(_call_sdk_step(action_name, lambda: STATE.arm_client.ExecuteAction(expected_id)))
+            steps.append(
+                _call_sdk_step(
+                    "release_arm",
+                    lambda: STATE.arm_client.ExecuteAction(SAFE_ARM_ACTIONS["release_arm"]),
+                )
+            )
+
+        steps.append(
+            _call_sdk_step(
+                action_name,
+                lambda: STATE.arm_client.ExecuteAction(expected_id),
+            )
+        )
 
     return _json_response(True, {"action_name": action_name, "action_id": expected_id, "steps": steps})
 
@@ -189,31 +219,149 @@ def handle_loco(body: Dict[str, Any]) -> Dict[str, Any]:
 
     action = str(body.get("action") or "").strip().lower()
     target = str(body.get("target") or "").strip()
+
+    def _run_velocity_step(action_name: str, vx: float, vy: float, omega: float, duration: float) -> Dict[str, Any]:
+        _log(
+            "[RobotProxy][Loco] "
+            f"action={action_name} vx={vx:.2f} vy={vy:.2f} omega={omega:.2f} duration={duration:.2f}"
+        )
+
+        step = _call_sdk_step(
+            f"LocoClient.SetVelocity.{action_name}",
+            lambda: STATE.loco_client.SetVelocity(vx, vy, omega, duration),
+        )
+
+        # 关键修复：
+        # SetVelocity 很可能只是下发速度命令并立即返回，不会阻塞 duration 秒。
+        # 如果马上发 zero velocity，会立刻把速度清零，导致 G1 不移动。
+        # 所以这里等待 duration 秒，再发送 zero velocity。
+        if step.get("ok") and duration > 0:
+            _log(f"[RobotProxy][Loco] action={action_name} sleeping {duration:.2f}s before zero velocity")
+            time.sleep(duration)
+
+        zero_step = _call_sdk_step(
+            f"LocoClient.SetVelocity.{action_name}.zero",
+            lambda: STATE.loco_client.SetVelocity(0.0, 0.0, 0.0, 0.2),
+        )
+
+        return {"move": step, "zero": zero_step}
+
     with STATE.lock:
         if action == "stop":
-            step = _call_sdk_step("StopMove", lambda: STATE.loco_client.StopMove())
+            _log("[RobotProxy] /api/robot/loco action=stop requested; calling LocoClient.StopMove")
+            step = _call_sdk_step("LocoClient.StopMove", lambda: STATE.loco_client.StopMove())
             return _json_response(True, {"action": action, "target": target, "steps": [step]})
+
         if action in {"stand", "high_stand"}:
-            step = _call_sdk_step("HighStand", lambda: STATE.loco_client.HighStand())
+            step = _call_sdk_step("LocoClient.HighStand", lambda: STATE.loco_client.HighStand())
             return _json_response(True, {"action": action, "target": target, "steps": [step]})
+
+        if action in LOCO_DEMO_ACTIONS:
+            step = _run_velocity_step(action, *LOCO_DEMO_ACTIONS[action])
+            return _json_response(True, {"action": action, "target": target, "steps": [step]})
+
+        if action == "night_guidance_route":
+            steps = []
+            for segment in ("move_forward_long", "turn_right_90", "move_forward_short"):
+                steps.append(_run_velocity_step(segment, *LOCO_DEMO_ACTIONS[segment]))
+                if segment != "move_forward_short":
+                    _log("[RobotProxy][Loco] night_guidance_route pause 0.50s")
+                    time.sleep(0.5)
+            return _json_response(True, {"action": action, "target": target, "steps": steps})
 
     if action in {"move", "navigate", "forward", "backward", "left", "right", "turn"}:
         return _json_response(False, error="loco move disabled in safe mode")
+
     return _json_response(False, error=f"loco action not allowed in safe mode: {action!r}")
 
 
 def handle_stop() -> Dict[str, Any]:
+    """
+    兼容旧的 /api/robot/stop，但默认不再调用任何 SDK stop。
+
+    原因：
+    已实测调用 /api/robot/stop 后，G1 TTS 可能进入
+    “TtsMaker ret=0 但无声音”的状态。即使移除了 AudioClient.PlayStop，
+    LocoClient.StopMove 或 release_arm 也可能影响音频服务状态。
+
+    所以比赛演示阶段：
+    - /api/robot/stop 只作为软停止/兼容接口；
+    - 不调用 LocoClient.StopMove；
+    - 不调用 G1ArmActionClient.release_arm；
+    - 不调用 AudioClient.PlayStop。
+
+    真正需要停止底盘时，请调用 /api/robot/motion_stop。
+    真正需要停止音频时，请调用 /api/robot/audio/stop。
+    """
     ok, error = _require_sdk()
     if not ok:
         return _json_response(False, error=error)
 
+    _log("[RobotProxy] /api/robot/stop received: soft no-op, audio untouched, motion untouched")
+    return _json_response(
+        True,
+        {
+            "safe_stop": True,
+            "soft_noop": True,
+            "message": "stop is soft no-op to protect G1 TTS; use /api/robot/motion_stop for real StopMove",
+            "steps": [],
+        },
+    )
+
+
+def handle_motion_stop() -> Dict[str, Any]:
+    """
+    显式运动停止接口。只有你确认需要真实 StopMove 时才调用。
+    主控 shutdown/reset 不建议默认调用它。
+    """
+    ok, error = _require_sdk()
+    if not ok:
+        return _json_response(False, error=error)
+
+    _log("[RobotProxy] motion_stop requested: calling LocoClient.StopMove only")
     steps = []
     with STATE.lock:
         steps.append(_call_sdk_step("LocoClient.StopMove", lambda: STATE.loco_client.StopMove()))
-        steps.append(_call_sdk_step("AudioClient.PlayStop", lambda: STATE.audio_client.PlayStop(AUDIO_APP_NAME)))
-        steps.append(_call_sdk_step("G1ArmActionClient.release_arm", lambda: STATE.arm_client.ExecuteAction(SAFE_ARM_ACTIONS["release_arm"])))
 
-    return _json_response(True, {"safe_stop": True, "steps": steps})
+    return _json_response(True, {"motion_stop": True, "steps": steps})
+
+
+def handle_arm_release() -> Dict[str, Any]:
+    """
+    显式手臂释放接口。不要和 /api/robot/stop 混在一起。
+    """
+    ok, error = _require_sdk()
+    if not ok:
+        return _json_response(False, error=error)
+
+    _log("[RobotProxy] arm_release requested")
+    steps = []
+    with STATE.lock:
+        steps.append(
+            _call_sdk_step(
+                "G1ArmActionClient.release_arm",
+                lambda: STATE.arm_client.ExecuteAction(SAFE_ARM_ACTIONS["release_arm"]),
+            )
+        )
+
+    return _json_response(True, {"arm_release": True, "steps": steps})
+
+
+def handle_audio_stop() -> Dict[str, Any]:
+    """
+    显式音频停止接口。正常主控退出不要调用。
+    仅在用户明确要求“别说了”、紧急中断播报等场景谨慎调用。
+    """
+    ok, error = _require_sdk()
+    if not ok:
+        return _json_response(False, error=error)
+
+    _log("[RobotProxy] audio stop requested")
+    with STATE.lock:
+        step = _call_sdk_step("AudioClient.PlayStop", lambda: STATE.audio_client.PlayStop(AUDIO_APP_NAME))
+
+    _log(f"[RobotProxy] AudioClient.PlayStop result={json.dumps(step, ensure_ascii=False)}")
+    return _json_response(True, {"audio_stop": True, "step": step})
 
 
 def handle_speak(body: Dict[str, Any]) -> Dict[str, Any]:
@@ -224,6 +372,7 @@ def handle_speak(body: Dict[str, Any]) -> Dict[str, Any]:
     text = str(body.get("text") or "").strip()
     if not text:
         return _json_response(False, error="text is empty")
+
     try:
         speaker_id = int(body.get("speaker_id", 0))
     except Exception:
@@ -231,18 +380,25 @@ def handle_speak(body: Dict[str, Any]) -> Dict[str, Any]:
 
     now = time.monotonic()
     elapsed = now - STATE.last_tts_ts
-    if elapsed < TTS_COOLDOWN_S:
-        return _json_response(False, error=f"TTS cooldown active: wait {TTS_COOLDOWN_S - elapsed:.1f}s")
 
+    # 不再拒绝 TTS 请求。
+    # 如果设置了 G1_TTS_COOLDOWN_S，则只做短暂等待，而不是返回错误。
+    if TTS_COOLDOWN_S > 0 and elapsed < TTS_COOLDOWN_S:
+        wait_s = max(0.0, TTS_COOLDOWN_S - elapsed)
+        _log(f"[RobotProxy] TTS cooldown wait {wait_s:.2f}s before speaking")
+        time.sleep(wait_s)
+
+    _log(f"[RobotProxy] TTS request text={text!r} speaker_id={speaker_id}")
     with STATE.lock:
         step = _call_sdk_step("AudioClient.TtsMaker", lambda: STATE.audio_client.TtsMaker(text, speaker_id))
         if step.get("ok"):
             STATE.last_tts_ts = time.monotonic()
+
     return _json_response(True, {"text": text, "speaker_id": speaker_id, "step": step})
 
 
 class G1RobotProxyHandler(BaseHTTPRequestHandler):
-    server_version = "G1RobotProxy/0.1"
+    server_version = "G1RobotProxy/0.2"
 
     def log_message(self, format: str, *args: Any) -> None:
         return
@@ -252,13 +408,16 @@ class G1RobotProxyHandler(BaseHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", "0") or "0")
         except ValueError:
             length = 0
+
         if length <= 0:
             return {}
+
         raw = self.rfile.read(length)
         try:
             data = json.loads(raw.decode("utf-8"))
         except Exception:
             return {}
+
         return data if isinstance(data, dict) else {}
 
     def _send_json(self, payload: Dict[str, Any], status: int = 200) -> None:
@@ -272,21 +431,38 @@ class G1RobotProxyHandler(BaseHTTPRequestHandler):
     def _dispatch(self) -> None:
         body = self._read_json_body()
         _log(f"HTTP request method={self.command} path={self.path} body={json.dumps(body, ensure_ascii=False)}")
+
         try:
             if self.command == "GET" and self.path == "/health":
                 payload = handle_health()
+
             elif self.command == "GET" and self.path == "/api/robot/status":
                 payload = handle_status()
+
             elif self.command == "POST" and self.path == "/api/robot/action":
                 payload = handle_action(body)
+
             elif self.command == "POST" and self.path == "/api/robot/loco":
                 payload = handle_loco(body)
+
             elif self.command == "POST" and self.path == "/api/robot/stop":
                 payload = handle_stop()
+
+            elif self.command == "POST" and self.path == "/api/robot/motion_stop":
+                payload = handle_motion_stop()
+
+            elif self.command == "POST" and self.path == "/api/robot/arm/release":
+                payload = handle_arm_release()
+
+            elif self.command == "POST" and self.path == "/api/robot/audio/stop":
+                payload = handle_audio_stop()
+
             elif self.command == "POST" and self.path == "/api/robot/speak":
                 payload = handle_speak(body)
+
             else:
                 payload = _json_response(False, error=f"unknown route: {self.command} {self.path}")
+
         except Exception as exc:  # noqa: BLE001
             _log(f"Unhandled request error: {exc}")
             _log(traceback.format_exc())
@@ -305,8 +481,10 @@ class G1RobotProxyHandler(BaseHTTPRequestHandler):
 def main() -> None:
     _log("Starting g1_robot_proxy")
     STATE.initialize_sdk()
+
     httpd = ThreadingHTTPServer((HOST, PORT), G1RobotProxyHandler)
     _log(f"Listening on http://{HOST}:{PORT}")
+
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

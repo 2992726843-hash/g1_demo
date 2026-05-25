@@ -24,49 +24,61 @@ class G1HttpClient:
             self.timeout_s = 3.0
         if self.timeout_s <= 0:
             self.timeout_s = 3.0
+        self.health_timeout_s = 3.0
+        self.speak_timeout_s = 5.0
+        self.action_timeout_s = 15.0
+        self.loco_timeout_s = 35.0
+        self.stop_timeout_s = 3.0
 
     def health(self) -> Dict[str, Any]:
-        return self._request("GET", "/health")
+        return self._request("GET", "/health", timeout_s=self.health_timeout_s)
 
     def play_action(self, action_id: int, action_name: Optional[str] = None) -> Dict[str, Any]:
         payload = {
             "action_id": int(action_id),
             "action_name": str(action_name or "").strip(),
         }
-        return self._request("POST", "/api/robot/action", json=payload)
+        return self._request("POST", "/api/robot/action", json=payload, timeout_s=self.action_timeout_s)
 
     def loco_control(self, action: str, target: Optional[str] = None) -> Dict[str, Any]:
         payload = {
             "action": str(action or "").strip(),
             "target": "" if target is None else str(target).strip(),
         }
-        return self._request("POST", "/api/robot/loco", json=payload)
+        return self._request("POST", "/api/robot/loco", json=payload, timeout_s=self.loco_timeout_s)
 
     def speak(self, text: str, speaker_id: int = 0) -> Dict[str, Any]:
         payload = {
             "text": str(text or "").strip(),
             "speaker_id": int(speaker_id),
         }
-        return self._request("POST", "/api/robot/speak", json=payload)
+        return self._request("POST", "/api/robot/speak", json=payload, timeout_s=self.speak_timeout_s)
 
     def stop(self) -> Dict[str, Any]:
-        return self._request("POST", "/api/robot/stop", json={})
+        return self._request("POST", "/api/robot/stop", json={}, timeout_s=self.stop_timeout_s)
 
     def safe_stop(self) -> Dict[str, Any]:
         return self.stop()
 
     def get_status(self) -> Dict[str, Any]:
-        return self._request("GET", "/api/robot/status")
+        return self._request("GET", "/api/robot/status", timeout_s=self.health_timeout_s)
 
-    def _request(self, method: str, path: str, json: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def _request(
+        self,
+        method: str,
+        path: str,
+        json: Optional[Dict[str, Any]] = None,
+        timeout_s: Optional[float] = None,
+    ) -> Dict[str, Any]:
         if not self.base_url:
             return {"ok": False, "error": "G1 proxy base_url is empty"}
 
         url = f"{self.base_url}{path if path.startswith('/') else '/' + path}"
         method_upper = method.upper()
+        timeout = timeout_s if timeout_s is not None else self.timeout_s
         try:
-            logger.info("[G1HttpClient] %s %s payload=%s", method_upper, url, json)
-            resp = requests.request(method_upper, url, json=json, timeout=self.timeout_s)
+            logger.info("[G1HttpClient] %s %s timeout=%.1fs payload=%s", method_upper, url, timeout, json)
+            resp = requests.request(method_upper, url, json=json, timeout=timeout)
         except requests.RequestException as exc:
             logger.warning("[G1HttpClient] request failed: %s %s err=%s", method_upper, url, exc)
             return {"ok": False, "error": str(exc)}

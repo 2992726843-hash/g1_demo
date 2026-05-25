@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import json
+from pathlib import Path
 import re
 from typing import Any, Dict, List, Tuple
+
+from modules.medicine.medicine_manager import resolve_medicine_id
 
 
 @dataclass
@@ -165,12 +169,47 @@ class TaskOrchestrator:
         "夜里起来",
         "晚上起来",
     ]
+    MOVE_FORWARD_SHORT_KEYWORDS: List[str] = [
+        "过来一点点",
+        "过来看一下",
+        "过来一下",
+        "走两步",
+        "往前走一点",
+        "向前走一点",
+    ]
     MEDICINE_REMINDER_KEYWORDS: List[str] = [
         "测试用药提醒",
         "用药提醒",
         "该吃药了",
         "提醒我吃药",
         "吃药时间到了",
+    ]
+    MEDICINE_VISUAL_VERIFY_KEYWORDS: List[str] = [
+        "帮我看看这个药",
+        "帮我看一下这个药",
+        "看一下这个药",
+        "看看这个药是什么",
+        "识别一下这个药",
+        "这个药我该不该吃",
+        "帮我检查一下药盒",
+        "检查一下药盒",
+        "帮我看看这个药盒",
+        "看一下这个药盒",
+        "帮我核对一下这个药",
+        "这个药帮我核对一下",
+        "这个药能不能帮我核对一下",
+    ]
+    MEDICINE_CHECK_ASSIST_KEYWORDS: List[str] = [
+        "过来帮我看一下这个药",
+        "过来帮我看看这个药",
+        "过来一下帮我看看这个药",
+        "过来一下帮我看一下这个药",
+        "过来看看这个药",
+        "过来看一下这个药",
+        "帮我看看这个药",
+        "帮我看一下这个药",
+        "看看这个药",
+        "看一下这个药",
     ]
     FIND_MEDICINE_KEYWORDS: List[str] = [
         "帮我找药",
@@ -222,6 +261,7 @@ class TaskOrchestrator:
         "我不想吃药",
         "不想吃药",
         "我不想吃",
+        "不想吃",
     ]
     MEDICINE_SNOOZE_KEYWORDS: List[str] = [
         "等会再吃药",
@@ -250,6 +290,34 @@ class TaskOrchestrator:
         "还没吃药",
         "没有吃药",
     ]
+    MEDICINE_QUERY_ALL_KEYWORDS: List[str] = [
+        "我今天吃药了吗",
+        "我今天有没有吃药",
+        "我今天吃药没有",
+        "我今天药吃了没",
+        "今天吃药没",
+        "今天吃药了吗",
+        "今天有没有吃药",
+        "今天有没有服药",
+        "今天有没有用药",
+        "今天有哪些药没吃",
+        "今天用药情况怎么样",
+        "今天用药情况",
+        "今天的药吃完了吗",
+        "今天的药有没有吃",
+        "我今天吃了什么药",
+        "今天吃过什么药",
+        "我今天服用了哪些药",
+    ]
+    MEDICINE_QUERY_SPECIFIC_KEYWORDS: List[str] = [
+        "吃了吗",
+        "吃过了吗",
+        "服用了吗",
+        "服过了吗",
+        "吃药了吗",
+        "吃药没有",
+        "有没有吃",
+    ]
     FALL_KEYWORDS: List[str] = ["测试跌倒", "测试摔倒", "跌倒", "摔倒", "倒地", "报警", "救命"]
     RESET_SYSTEM_KEYWORDS: List[str] = [
         "复位",
@@ -260,8 +328,16 @@ class TaskOrchestrator:
         "全部关闭",
         "关闭所有设备",
         "重置系统",
+    ]
+    ALARM_CLEAR_KEYWORDS: List[str] = [
+        "关闭警报器",
+        "关闭报警器",
         "解除报警",
         "停止报警",
+        "别响了",
+        "报警器停一下",
+        "恢复报警器供电",
+        "关闭1号开关报警",
     ]
     STATUS_QUERY_KEYWORDS: List[str] = [
         "检查",
@@ -289,6 +365,10 @@ class TaskOrchestrator:
         "navigate",
         "move",
         "stop",
+        "move_forward_short",
+        "move_forward_long",
+        "turn_right_90",
+        "night_guidance_route",
         "wave_hand",
         "wave_face",
         "shake_hand",
@@ -330,7 +410,7 @@ class TaskOrchestrator:
                 steps=[
                     TaskStep(type="iot_scene", name="night_mode"),
                     TaskStep(type="speak", text="夜间辅助灯已经打开，我带您去卫生间，请慢一点。"),
-                    TaskStep(type="robot", action="right_hand_up"),
+                    TaskStep(type="robot", action="night_guidance_route"),
                 ],
             )
 
@@ -342,9 +422,35 @@ class TaskOrchestrator:
                 intent=intent_dict,
                 steps=[
                     TaskStep(type="robot_stop"),
-                    TaskStep(type="iot_scene", name="reset_mode"),
+                    TaskStep(type="iot_device_off", name="bedroom_light", label="卧室灯"),
+                    TaskStep(type="iot_device_off", name="path_strip", label="RGB灯带"),
+                    TaskStep(type="iot_device_on", name="alarm_socket", label="1号开关"),
+                    TaskStep(type="iot_device_off", name="night_light_socket", label="2号开关"),
                     TaskStep(type="medicine_clear_today"),
+                    TaskStep(type="care_log_clear"),
                     TaskStep(type="speak", text="系统已恢复默认状态。"),
+                ],
+            )
+
+        if self._contains_any(norm, self.ALARM_CLEAR_KEYWORDS):
+            return TaskPlan(
+                name="alarm_clear",
+                source="rule",
+                user_text=text,
+                intent=intent_dict,
+                steps=[
+                    TaskStep(type="iot_device_on", name="alarm_socket", label="1号开关"),
+                    TaskStep(
+                        type="care_log",
+                        meta={
+                            "event_type": "alarm_cleared",
+                            "title": "警报器已关闭",
+                            "source": "task_executor",
+                            "detail": {"device": "alarm_socket"},
+                            "require_iot_success": True,
+                        },
+                    ),
+                    TaskStep(type="speak", text="警报器已关闭。"),
                 ],
             )
 
@@ -402,7 +508,7 @@ class TaskOrchestrator:
                     intent=intent_dict,
                     steps=[
                         TaskStep(type="iot_device_on", name=device_name, label=label),
-                        TaskStep(type="robot", action="heart"),
+                        TaskStep(type="robot", action="right_hand_up"),
                         TaskStep(type="speak", text=f"{label}已经打开。"),
                     ],
                 )
@@ -414,7 +520,7 @@ class TaskOrchestrator:
                     intent=intent_dict,
                     steps=[
                         TaskStep(type="iot_device_off", name=device_name, label=label),
-                        TaskStep(type="robot", action="heart"),
+                        TaskStep(type="robot", action="right_hand_up"),
                         TaskStep(type="speak", text=f"{label}已经关闭。"),
                     ],
                 )
@@ -422,6 +528,18 @@ class TaskOrchestrator:
         default_light_plan = self._plan_default_light_switch(text, norm, intent_dict)
         if default_light_plan is not None:
             return default_light_plan
+
+        if self._contains_any(norm, self.MOVE_FORWARD_SHORT_KEYWORDS):
+            return TaskPlan(
+                name="robot_move_forward_short",
+                source="rule",
+                user_text=text,
+                intent=intent_dict,
+                steps=[
+                    TaskStep(type="speak", text="我向前走一点，请注意安全。"),
+                    TaskStep(type="robot", action="move_forward_short"),
+                ],
+            )
 
         # 规则优先级 6：LLM fallback
         return self._build_llm_fallback_plan(text, intent_dict)
@@ -458,14 +576,53 @@ class TaskOrchestrator:
         return any(re.search(p, text) is not None for p in patterns)
 
     def _plan_medicine_interaction(self, text: str, norm: str, intent_dict: Dict[str, Any]) -> TaskPlan | None:
-        if self._contains_any(norm, self.MEDICINE_QUERY_KEYWORDS):
+        medicine_id = self._resolve_medicine_id(norm)
+        pending_medicine_id = str(intent_dict.get("pending_medicine_id") or "").strip()
+
+        if self._contains_any(norm, self.MEDICINE_CHECK_ASSIST_KEYWORDS):
             return TaskPlan(
-                name="medicine_query",
+                name="medicine_check_assist",
                 source="rule",
                 user_text=text,
                 intent=intent_dict,
                 steps=[
-                    TaskStep(type="medicine_query_today"),
+                    TaskStep(type="speak", text="好的，我来帮你看看"),
+                    TaskStep(type="robot", action="move_forward_short"),
+                ],
+            )
+
+        if self._contains_any(norm, self.MEDICINE_VISUAL_VERIFY_KEYWORDS):
+            return TaskPlan(
+                name="medicine_visual_verify",
+                source="rule",
+                user_text=text,
+                intent=intent_dict,
+                steps=[
+                    TaskStep(type="speak", text="好的，请把药物放在摄像头下面，或者拿近一点，我来帮您核对。"),
+                    TaskStep(type="robot", action="right_hand_up"),
+                ],
+            )
+
+        if medicine_id and self._is_medicine_query(norm):
+            return TaskPlan(
+                name="medicine_query_specific",
+                source="rule",
+                user_text=text,
+                intent=intent_dict,
+                steps=[
+                    TaskStep(type="medicine_query_today", meta={"medicine_id": medicine_id}),
+                    TaskStep(type="speak", text=""),
+                ],
+            )
+
+        if self._contains_any(norm, self.MEDICINE_QUERY_ALL_KEYWORDS):
+            return TaskPlan(
+                name="medicine_query_all",
+                source="rule",
+                user_text=text,
+                intent=intent_dict,
+                steps=[
+                    TaskStep(type="medicine_query_all_today"),
                     TaskStep(type="speak", text=""),
                 ],
             )
@@ -473,44 +630,58 @@ class TaskOrchestrator:
         _taken_hit = (
             self._contains_any(norm, self.MEDICINE_TAKEN_KEYWORDS)
             or self._matches_any_pattern(norm, self.MEDICINE_TAKEN_PATTERNS)
+            or (medicine_id is not None and self._is_medicine_taken(norm))
         )
         if _taken_hit and not self._contains_any(norm, self.MEDICINE_TAKEN_NEGATIVE_KEYWORDS):
+            meta = {"action": "taken"}
+            if medicine_id:
+                meta["medicine_id"] = medicine_id
+            elif pending_medicine_id:
+                meta["medicine_id"] = pending_medicine_id
             return TaskPlan(
                 name="medicine_taken",
                 source="rule",
                 user_text=text,
                 intent=intent_dict,
                 steps=[
-                    TaskStep(type="medicine_record", meta={"action": "taken"}),
-                    TaskStep(type="iot_scene", name="reset_mode"),
+                    TaskStep(type="medicine_record", meta=meta),
                     TaskStep(type="robot", action="clap"),
-                    TaskStep(type="speak", text="已记录您今天已服药。"),
+                    TaskStep(type="speak", text=""),
                 ],
             )
 
         if self._contains_any(norm, self.MEDICINE_REFUSE_KEYWORDS):
+            meta = {"action": "refused"}
+            if medicine_id:
+                meta["medicine_id"] = medicine_id
+            elif pending_medicine_id:
+                meta["medicine_id"] = pending_medicine_id
             return TaskPlan(
                 name="medicine_refuse",
                 source="rule",
                 user_text=text,
                 intent=intent_dict,
                 steps=[
-                    TaskStep(type="medicine_record", meta={"action": "refused"}),
-                    TaskStep(type="robot", action="x_ray"),
-                    TaskStep(type="speak", text="我理解您现在不太想吃药，但按时用药很重要。要不要我稍后再提醒您？"),
+                    TaskStep(type="medicine_record", meta=meta),
+                    TaskStep(type="robot", action="reject"),
+                    TaskStep(type="speak", text=""),
                 ],
             )
 
         if self._contains_any(norm, self.MEDICINE_SNOOZE_KEYWORDS):
+            meta = {"action": "snooze", "minutes": 10}
+            if medicine_id:
+                meta["medicine_id"] = medicine_id
+            elif pending_medicine_id:
+                meta["medicine_id"] = pending_medicine_id
             return TaskPlan(
                 name="medicine_snooze",
                 source="rule",
                 user_text=text,
                 intent=intent_dict,
                 steps=[
-                    TaskStep(type="medicine_record", meta={"action": "snooze", "minutes": 10}),
-                    TaskStep(type="robot", action="wave_hand"),
-                    TaskStep(type="speak", text="好的，我稍后再提醒您。"),
+                    TaskStep(type="medicine_record", meta=meta),
+                    TaskStep(type="speak", text=""),
                 ],
             )
 
@@ -536,14 +707,41 @@ class TaskOrchestrator:
                 user_text=text,
                 intent=intent_dict,
                 steps=[
-                    TaskStep(type="iot_scene", name="medicine_mode"),
-                    TaskStep(type="medicine_record", meta={"action": "reminded"}),
-                    TaskStep(type="robot", action="wave_face"),
-                    TaskStep(type="speak", text="现在是用药时间，请按时服药。"),
+                    TaskStep(type="medicine_record", meta={"action": "reminded", "medicine_id": pending_medicine_id}),
+                    TaskStep(type="robot", action="hands_up"),
+                    TaskStep(type="speak", text=""),
                 ],
             )
 
         return None
+
+    @staticmethod
+    def _load_medicine_profile() -> dict:
+        path = Path("data/medicine_profile.json")
+        try:
+            content = path.read_text(encoding="utf-8")
+            parsed = json.loads(content) if content.strip() else {}
+            return parsed if isinstance(parsed, dict) else {}
+        except Exception:  # noqa: BLE001
+            return {}
+
+    def _resolve_medicine_id(self, text: str) -> str | None:
+        return resolve_medicine_id(text, self._load_medicine_profile())
+
+    def _is_medicine_query(self, text: str) -> bool:
+        return self._contains_any(text, self.MEDICINE_QUERY_SPECIFIC_KEYWORDS) or self._subany(
+            text,
+            text,
+            "吃没",
+            "吃了没有",
+            "服了没有",
+        )
+
+    @staticmethod
+    def _is_medicine_taken(text: str) -> bool:
+        if not text:
+            return False
+        return any(key in text for key in ("吃了", "服了", "吃过", "服过", "已经吃", "已经服", "刚才吃", "刚才服"))
 
     @staticmethod
     def _clamp_brightness(value: int) -> int:
@@ -646,7 +844,7 @@ class TaskOrchestrator:
             intent=intent_dict,
             steps=[
                 TaskStep(type=step_type, name=self.DEFAULT_LIGHT, label=self.DEFAULT_LIGHT_LABEL),
-                TaskStep(type="robot", action="heart"),
+                TaskStep(type="robot", action="right_hand_up"),
                 TaskStep(type="speak", text=f"{self.DEFAULT_LIGHT_LABEL}已经{action_text}。"),
             ],
         )
@@ -816,6 +1014,7 @@ class TaskOrchestrator:
         attrs: Dict[str, Any],
         reason: str,
     ) -> TaskPlan:
+        robot_action = "wave_face" if reason in {"default_brighten", "brighten"} else "heart"
         return TaskPlan(
             name="light_param_adjust",
             source="rule",
@@ -828,7 +1027,7 @@ class TaskOrchestrator:
                     label=label,
                     meta={"service": "turn_on", "attributes": dict(attrs)},
                 ),
-                TaskStep(type="robot", action="heart"),
+                TaskStep(type="robot", action=robot_action),
                 TaskStep(type="speak", text=self._light_set_success_speak(label, attrs, reason)),
             ],
         )

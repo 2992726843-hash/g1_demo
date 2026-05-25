@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from typing import Any, Optional
 
 # 与 system_config.yaml 中 speech.asr.initial_prompt 保持语义一致；未配置时使用此默认值。
@@ -71,6 +72,16 @@ class FasterWhisperASR:
         self.condition_on_previous_text = bool(condition_on_previous_text)
         ip = (initial_prompt or "").strip()
         self.initial_prompt: str = ip if ip else _DEFAULT_INITIAL_PROMPT
+        try:
+            from core.utils import ConfigLoader  # type: ignore
+
+            cfg_loader = ConfigLoader()
+            self.perf_log = bool(cfg_loader.get_nested("debug", "perf_log", default=True))
+            verbose_log = bool(cfg_loader.get_nested("debug", "verbose_log", default=True))
+            self.asr_detail_log = bool(cfg_loader.get_nested("debug", "asr_detail_log", default=verbose_log))
+        except Exception:
+            self.perf_log = True
+            self.asr_detail_log = True
 
         self._model: Any = None
         self._init_model()
@@ -118,6 +129,7 @@ class FasterWhisperASR:
         if self._model is None:
             return ""
 
+        start = time.perf_counter()
         try:
             transcribe_kw: dict[str, Any] = {
                 "language": self.language,
@@ -141,15 +153,21 @@ class FasterWhisperASR:
                     continue
             raw_joined = " ".join(parts)
             raw_joined = (raw_joined or "").strip()
-            if raw_joined:
+            if raw_joined and self.asr_detail_log:
                 _log(self.logger, f"[ASR] 原始识别结果: {raw_joined}")
 
             text = (raw_joined or "").strip()
             text = " ".join(text.split())
         except Exception as exc:
             _warn(self.logger, f"[Speech][WARN] ASR 识别失败：{exc}")
+            cost_ms = (time.perf_counter() - start) * 1000.0
+            if self.perf_log:
+                _log(self.logger, f"[PERF] faster_whisper_transcribe cost={cost_ms:.1f} ms")
             return ""
 
-        if text:
+        if text and self.asr_detail_log:
             _log(self.logger, f"[ASR] 识别结果: {text}")
+        cost_ms = (time.perf_counter() - start) * 1000.0
+        if self.perf_log:
+            _log(self.logger, f"[PERF] faster_whisper_transcribe cost={cost_ms:.1f} ms")
         return text

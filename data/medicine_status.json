@@ -1,36 +1,150 @@
 {
-  "version": 1,
-  "updated_at": "2026-05-05T19:35:04",
+  "version": 2,
+  "updated_at": "2026-05-24T22:38:27",
   "days": {
     "2026-05-03": {
-      "taken": false,
-      "taken_at": null,
-      "snoozed": false,
-      "snoozed_at": null,
-      "snooze_minutes": null,
-      "refused": false,
-      "refused_at": null,
-      "last_reminded_at": null
+      "medicines": {
+        "med_bp_001": {
+          "taken": false,
+          "taken_at": null,
+          "snoozed": false,
+          "snoozed_at": null,
+          "snooze_minutes": null,
+          "refused": false,
+          "refused_at": null,
+          "last_reminded_at": null
+        }
+      }
     },
     "2026-05-04": {
-      "taken": false,
-      "taken_at": null,
-      "snoozed": false,
-      "snoozed_at": null,
-      "snooze_minutes": null,
-      "refused": false,
-      "refused_at": null,
-      "last_reminded_at": null
+      "medicines": {
+        "med_bp_001": {
+          "taken": false,
+          "taken_at": null,
+          "snoozed": false,
+          "snoozed_at": null,
+          "snooze_minutes": null,
+          "refused": false,
+          "refused_at": null,
+          "last_reminded_at": null
+        }
+      }
     },
     "2026-05-05": {
-      "taken": false,
-      "taken_at": null,
-      "snoozed": false,
-      "snoozed_at": null,
-      "snooze_minutes": null,
-      "refused": false,
-      "refused_at": null,
-      "last_reminded_at": null
+      "medicines": {
+        "med_bp_001": {
+          "taken": false,
+          "taken_at": null,
+          "snoozed": false,
+          "snoozed_at": null,
+          "snooze_minutes": null,
+          "refused": false,
+          "refused_at": null,
+          "last_reminded_at": null
+        }
+      }
+    },
+    "2026-05-22": {
+      "medicines": {
+        "med_bp_001": {
+          "taken": false,
+          "taken_at": null,
+          "snoozed": false,
+          "snoozed_at": null,
+          "snooze_minutes": null,
+          "refused": false,
+          "refused_at": null,
+          "last_reminded_at": null
+        },
+        "med_vit_001": {
+          "taken": false,
+          "taken_at": null,
+          "snoozed": false,
+          "snoozed_at": null,
+          "snooze_minutes": null,
+          "refused": false,
+          "refused_at": null,
+          "last_reminded_at": null
+        },
+        "med_cal_001": {
+          "taken": false,
+          "taken_at": null,
+          "snoozed": false,
+          "snoozed_at": null,
+          "snooze_minutes": null,
+          "refused": false,
+          "refused_at": null,
+          "last_reminded_at": null
+        }
+      }
+    },
+    "2026-05-23": {
+      "medicines": {
+        "med_bp_001": {
+          "taken": false,
+          "taken_at": null,
+          "snoozed": false,
+          "snoozed_at": null,
+          "snooze_minutes": null,
+          "refused": false,
+          "refused_at": null,
+          "last_reminded_at": null
+        },
+        "med_vit_001": {
+          "taken": false,
+          "taken_at": null,
+          "snoozed": false,
+          "snoozed_at": null,
+          "snooze_minutes": null,
+          "refused": false,
+          "refused_at": null,
+          "last_reminded_at": null
+        },
+        "med_cal_001": {
+          "taken": false,
+          "taken_at": null,
+          "snoozed": false,
+          "snoozed_at": null,
+          "snooze_minutes": null,
+          "refused": false,
+          "refused_at": null,
+          "last_reminded_at": null
+        }
+      }
+    },
+    "2026-05-24": {
+      "medicines": {
+        "med_bp_001": {
+          "taken": false,
+          "taken_at": null,
+          "snoozed": false,
+          "snoozed_at": null,
+          "snooze_minutes": null,
+          "refused": false,
+          "refused_at": null,
+          "last_reminded_at": null
+        },
+        "med_vit_001": {
+          "taken": false,
+          "taken_at": null,
+          "snoozed": false,
+          "snoozed_at": null,
+          "snooze_minutes": null,
+          "refused": false,
+          "refused_at": null,
+          "last_reminded_at": null
+        },
+        "med_cal_001": {
+          "taken": false,
+          "taken_at": null,
+          "snoozed": false,
+          "snoozed_at": null,
+          "snooze_minutes": null,
+          "refused": false,
+          "refused_at": null,
+          "last_reminded_at": null
+        }
+      }
     }
   }
 }

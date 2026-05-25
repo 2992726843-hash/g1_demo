@@ -1,0 +1,43 @@
+{
+  "medicines": {
+    "med_bp_001": {
+      "display_name": "降压药",
+      "dose": "1片",
+      "schedule_text": "每天晚饭后",
+      "periods": [
+        "evening"
+      ],
+      "aliases": [
+        "降压药",
+        "血压药"
+      ],
+      "warning": "请按医嘱服用，本系统只做提醒和记录"
+    },
+    "med_vit_001": {
+      "display_name": "维生素",
+      "dose": "1片",
+      "schedule_text": "每天早餐后",
+      "periods": [
+        "morning"
+      ],
+      "aliases": [
+        "维生素",
+        "营养片"
+      ],
+      "warning": "请按包装或医嘱服用"
+    },
+    "med_cal_001": {
+      "display_name": "钙片",
+      "dose": "1片",
+      "schedule_text": "每天午饭后",
+      "periods": [
+        "noon"
+      ],
+      "aliases": [
+        "钙片",
+        "补钙药"
+      ],
+      "warning": "请按包装或医嘱服用"
+    }
+  }
+}

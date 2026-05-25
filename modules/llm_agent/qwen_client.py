@@ -53,6 +53,8 @@ class QwenAgent:
         # 3) 可选配置：base_url / model_name
         self.base_url: str = str(cfg.get_nested("llm", "base_url", default="") or "")
         self.model_name: str = str(cfg.get_nested("llm", "model_name", default="") or "") or "qwen-turbo"
+        self.perf_log: bool = bool(cfg.get_nested("debug", "perf_log", default=True))
+        self.verbose_log: bool = bool(cfg.get_nested("debug", "verbose_log", default=True))
 
         # 3) 动态动作集合：从 ActionExecutor.ACTION_MAP.keys() 读取
         try:
@@ -84,7 +86,8 @@ class QwenAgent:
 
         self.VALID_ACTIONS: List[str] = valid
         self._system_prompt: str = self._build_system_prompt()
-        self.logger.info("QwenAgent 初始化完成：VALID_ACTIONS=%s", self.VALID_ACTIONS)
+        if self.verbose_log:
+            self.logger.info("QwenAgent 初始化完成：VALID_ACTIONS=%s", self.VALID_ACTIONS)
 
     def chat(self, user_text: str, context: str = "") -> Dict[str, str]:
         """
@@ -99,7 +102,11 @@ class QwenAgent:
         # 比赛场景先求稳：常见指令直接短路，不走网络，避免幻觉/延迟/断网翻车
         shortcut = self._shortcut_intent(user_text)
         if shortcut is not None:
+            if self.perf_log:
+                self.logger.info("[PERF] llm_chat mode=shortcut")
             return shortcut
+        if self.perf_log:
+            self.logger.info("[PERF] llm_chat mode=remote model=%s", self.model_name)
 
         ctx = (context or "").strip()
         user_text_clean = user_text.strip()
@@ -197,7 +204,8 @@ class QwenAgent:
             action = "none"
         elif action == "none":
             # 允许 category 保留（可能用于 UI 展示/后续策略），但记录日志便于排查
-            self.logger.info("action=none 但 category=%s，将仅播报 reply。raw=%r", category, raw_text)
+            if self.verbose_log:
+                self.logger.info("action=none 但 category=%s，将仅播报 reply。raw=%r", category, raw_text)
 
         target_raw = obj.get("target", "")
         target = "" if target_raw is None else str(target_raw)
@@ -239,15 +247,6 @@ class QwenAgent:
         if not t:
             return None
 
-        # 比赛阶段 shortcut 只处理「单意图短句」；复合任务交给后续 LLM/API 解析链路，
-        # 不在 shortcut 层强行截断，避免「向前走两步，再挥挥手」因含「挥手」被误判为单动作。
-        if any(m in t for m in ("然后", "并且", "同时", ",", "，", "接着")):
-            return None
-        # 「再」作连接词时拦截；先去掉「再见」避免该词内的「再」字误判为复合句。
-        if "再" in t.replace("再见", ""):
-            return None
-
-        # 只做非常简单的关键词匹配（不引入复杂 NLP）
         def _ret(category: str, action: str, target: str, reply: str) -> Optional[Dict[str, str]]:
             """
             shortcut 的硬约束：
@@ -264,10 +263,22 @@ class QwenAgent:
                     "category": str(category or "chat").strip() or "chat",
                     "action": a,
                     "target": "" if target is None else str(target),
-                    "reply": str(reply or "").strip() or self._FALLBACK["reply"],
+                    "reply": "" if reply is None else str(reply).strip(),
                 }
             except Exception:
                 return None
+
+        medicine_shortcut = self._shortcut_medicine_intent(t, _ret)
+        if medicine_shortcut is not None:
+            return medicine_shortcut
+
+        # 比赛阶段 shortcut 只处理「单意图短句」；复合任务交给后续 LLM/API 解析链路，
+        # 不在 shortcut 层强行截断，避免「向前走两步，再挥挥手」因含「挥手」被误判为单动作。
+        if any(m in t for m in ("然后", "并且", "同时", ",", "，", "接着")):
+            return None
+        # 「再」作连接词时拦截；先去掉「再见」避免该词内的「再」字误判为复合句。
+        if "再" in t.replace("再见", ""):
+            return None
 
         # ========== emergency / 急停 ==========
         if any(k in t for k in ("急停", "紧急停止", "立刻停止", "马上停下", "停止动作", "别动了")):
@@ -321,6 +332,133 @@ class QwenAgent:
             return _ret("iot_action", "ac_on", "climate.bedroom_ac", "好的，我来帮您打开空调。")
 
         return None
+
+    def _shortcut_medicine_intent(self, text: str, ret) -> Optional[Dict[str, str]]:
+        """High-frequency medicine commands stay local; TaskOrchestrator still builds the final plan."""
+        t = self._normalize_medicine_shortcut_text(text)
+        if not t:
+            return None
+
+        neutral = lambda: ret("chat", "none", "", "")
+
+        query_all = {
+            "我今天有没有吃药",
+            "我今天药吃了没",
+            "今天有没有吃药",
+            "今天有没有服药",
+            "今天有没有用药",
+            "今天的药有没有吃",
+            "今天的药吃完了吗",
+            "今天用药情况怎么样",
+            "今天吃药情况怎么样",
+            "今天有哪些药没吃",
+            "我今天吃了什么药",
+            "今天吃过什么药",
+            "我今天吃过什么药",
+            "我今天服用了哪些药",
+            # Existing high-confidence forms retained.
+            "我今天吃药了吗",
+            "我今天吃药没有",
+        }
+        if t in query_all:
+            return neutral()
+
+        single_query_templates = (
+            "我今天{alias}有没有吃",
+            "我今天{alias}吃了吗",
+            "{alias}今天吃过了吗",
+            "{alias}今天吃了吗",
+        )
+        for alias in ("降压药", "血压药", "维生素", "营养片", "钙片", "补钙药"):
+            if any(t == tmpl.format(alias=alias) for tmpl in single_query_templates):
+                return neutral()
+
+        # Explicit non-taken forms can stay local, but remain neutral.
+        non_taken = {
+            "我没有吃药",
+            "我还没吃药",
+        }
+        if t in non_taken:
+            return neutral()
+
+        refused = {
+            "我不想吃药",
+            "我不想吃降压药",
+            "我不想吃维生素",
+            "我不想吃钙片",
+        }
+        if t in refused:
+            return neutral()
+
+        snooze = {
+            "稍后提醒我",
+            "等会再吃",
+            "等一下再吃",
+            "过会儿提醒我",
+            "过会提醒我",
+            "维生素等会再吃",
+            "降压药等会再吃",
+            "钙片等会再吃",
+        }
+        if t in snooze:
+            return neutral()
+
+        visual = {
+            "帮我看看这个药",
+            "帮我看一下这个药",
+            "看看这个药是什么",
+            "识别一下这个药",
+            "这个药我该不该吃",
+            "帮我检查一下药盒",
+            "帮我看看这个药盒",
+            "看一下这个药盒",
+            "帮我核对一下这个药",
+            "这个药帮我核对一下",
+        }
+        if t in visual:
+            return neutral()
+
+        taken = {
+            "我已经吃药了",
+            "我刚才把药吃了",
+            "我已经服药了",
+            "我已经吃了降压药",
+            "我刚才把维生素吃了",
+            "钙片已经吃了",
+        }
+        taken_exclusions = {
+            "我没有吃药",
+            "我还没吃药",
+            "我今天有没有吃药",
+            "我今天吃药了吗",
+            "我今天吃药没有",
+            "我不想吃药",
+            "等会再吃",
+        }
+        if t in taken and t not in taken_exclusions:
+            return neutral()
+
+        return None
+
+    @staticmethod
+    def _normalize_medicine_shortcut_text(text: str) -> str:
+        t = str(text or "").strip()
+        if not t:
+            return ""
+        t = re.sub(r"[\s\u3000，,。.!！?？、；;:\"'“”‘’「」『』（）()［］\[\]【】…·—-]+", "", t)
+        replacements = (
+            ("今日", "今天"),
+            ("服用药", "吃药"),
+            ("服药", "吃药"),
+            ("用药", "吃药"),
+            ("吃了没有", "吃了没"),
+            ("吃过没有", "吃过没"),
+            ("等会儿", "等会"),
+            ("过一会儿", "过会儿"),
+        )
+        for old, new in replacements:
+            t = t.replace(old, new)
+        return t
 
     @staticmethod
     def _chat_completions_url(base_url: str) -> str:

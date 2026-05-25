@@ -6,6 +6,7 @@ import shutil
 import subprocess
 from pathlib import Path
 from typing import Any, Optional
+from urllib.parse import urlparse
 
 
 def _log(logger: Any, msg: str) -> None:
@@ -266,12 +267,21 @@ class TTSClient:
                 _warn(self.logger, "[Speech][WARN] TTS speak 文本为空，已忽略")
                 return
             self._last_text = t
+            _log(self.logger, f"[Speech][TTS] backend = {self.backend}")
+            _log(self.logger, f"[Speech][TTS] request text = {t}")
 
             if not self.enabled:
+                _warn(self.logger, "[Speech][TTS][WARN] fallback to print because: tts.enabled=false")
+                self._print_backend(t)
                 return
 
             # 永远可用：print
             if self.backend == "print" or not self._available:
+                if self.backend != "print":
+                    _warn(
+                        self.logger,
+                        f"[Speech][TTS][WARN] fallback to print because: backend unavailable ({self.backend})",
+                    )
                 self._print_backend(t)
                 return
 
@@ -395,17 +405,21 @@ class TTSClient:
 
     def _fallback_speak(self, text: str, reason: str) -> None:
         if not self._fallback_to_pc_tts:
-            _warn(self.logger, f"[Speech][WARN] {reason}，fallback_to_pc_tts=false，仅打印文本")
+            _warn(self.logger, f"[Speech][TTS][WARN] fallback to print because: {reason}; fallback_to_pc_tts=false")
             self._print_backend(text)
             return
 
         fallback = self._fallback_backend if self._fallback_backend != "g1_http" else "print"
-        _warn(self.logger, f"[Speech][WARN] {reason}，回退到 {fallback}")
+        _warn(self.logger, f"[Speech][TTS][WARN] fallback to {fallback} because: {reason}")
         if not self._speak_with_backend(text, fallback):
+            _warn(self.logger, f"[Speech][TTS][WARN] fallback to print because: {fallback} failed")
             self._print_backend(text)
 
     def _g1_http_speak(self, text: str) -> bool:
+        url = f"{self._g1_proxy_base_url.rstrip('/')}/api/robot/speak" if self._g1_proxy_base_url else "/api/robot/speak"
+        _log(self.logger, f"[Speech][TTS] g1_http url = {url}")
         try:
+            self._ensure_g1_no_proxy()
             if self._g1_client is None:
                 from hardware.g1_http_client import G1HttpClient  # type: ignore
 
@@ -415,12 +429,29 @@ class TTSClient:
                 )
             result = self._g1_client.speak(text, speaker_id=self._g1_speaker_id)
             if bool(result.get("ok")):
+                _log(self.logger, "[Speech][TTS] response ok = true")
                 return True
-            _warn(self.logger, f"[Speech][WARN] G1 HTTP TTS 返回失败: {result}")
+            _log(self.logger, "[Speech][TTS] response ok = false")
+            _warn(self.logger, f"[Speech][TTS][WARN] G1 HTTP TTS failed: {result}")
             return False
         except Exception as exc:  # noqa: BLE001
-            _warn(self.logger, f"[Speech][WARN] G1 HTTP TTS 异常: {exc}")
+            _log(self.logger, "[Speech][TTS] response ok = false")
+            _warn(self.logger, f"[Speech][TTS][WARN] G1 HTTP TTS failed: {exc}")
             return False
+
+    def _ensure_g1_no_proxy(self) -> None:
+        try:
+            host = str(urlparse(self._g1_proxy_base_url).hostname or "").strip()
+        except Exception:
+            host = ""
+        if not host:
+            return
+        for key in ("NO_PROXY", "no_proxy"):
+            current = os.environ.get(key, "")
+            parts = [p.strip() for p in current.split(",") if p.strip()]
+            if host not in parts:
+                parts.append(host)
+                os.environ[key] = ",".join(parts)
 
     def stop(self) -> None:
         try:
@@ -430,4 +461,3 @@ class TTSClient:
                 _log(self.logger, "[Speech] g1_http 当前无独立 speak_stop，stop_speaking 暂不调用机器人 stop")
         except Exception:
             return
-

@@ -51,6 +51,10 @@ class ActionExecutor:
         "navigate": _ActionSpec(type="loco_sdk"),
         "move": _ActionSpec(type="loco_sdk"),
         "stop": _ActionSpec(type="loco_sdk"),
+        "move_forward_short": _ActionSpec(type="loco_sdk"),
+        "move_forward_long": _ActionSpec(type="loco_sdk"),
+        "turn_right_90": _ActionSpec(type="loco_sdk"),
+        "night_guidance_route": _ActionSpec(type="loco_sdk"),
 
         # 🤖 手臂动作（Unitree SDK2 Arm Action / G1ArmActionClient）
         #
@@ -131,7 +135,7 @@ class ActionExecutor:
     # -----------------------------
     # 对外接口
     # -----------------------------
-    def _clear_pending_actions(self, reason: str = "") -> None:
+    def _clear_pending_actions(self, reason: str = "") -> int:
         cleared = 0
         while not self._queue.empty():
             try:
@@ -145,6 +149,19 @@ class ActionExecutor:
                 break
         if cleared:
             logger.info("已清空待执行动作队列：cleared=%s reason=%s", cleared, reason)
+        return cleared
+
+    def clear_pending_actions(self) -> int:
+        """
+        清空尚未执行的动作队列。
+        返回清理的动作数量。
+        不做零力矩，不释放电机。
+        """
+        try:
+            return self._clear_pending_actions(reason="clear_pending_actions")
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("清空待执行动作队列失败，已忽略: err=%s", exc)
+            return 0
 
     def submit_action(self, action_name: str, target: str = "") -> None:
         """
@@ -154,7 +171,15 @@ class ActionExecutor:
           如果 action_name 属于 ["navigate", "move", "stop"]，必须在入队前安全清空队列，
           防止旧的移动/导航指令滞留导致行为不可控。
         """
-        if action_name in ["navigate", "move", "stop"]:
+        if action_name in [
+            "navigate",
+            "move",
+            "stop",
+            "move_forward_short",
+            "move_forward_long",
+            "turn_right_90",
+            "night_guidance_route",
+        ]:
             self._clear_pending_actions(reason=f"submit_{action_name}")
             logger.info("覆盖策略触发：已清空队列后提交动作：%s target=%s", action_name, target)
         else:

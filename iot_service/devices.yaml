@@ -14,8 +14,8 @@ medicine_light: "light.sonoff_10016a06ec"
 
 # 智能插座
 alarm_socket: "switch.wiing_cn_2029557138_v9icm_on_p_2_1"
+# 备用智能插座：当前未接设备，后续可接小夜灯、药盒提示灯、床边提示灯等低功率设备
 night_light_socket: "switch.wiing_cn_2029630976_v9icm_on_p_2_1"
-
 
 
 
